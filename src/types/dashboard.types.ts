@@ -31,3 +31,8 @@ export interface RecentActivity {
   description: string;
   createdAt: string;
 }
+
+export interface CompanyDashboardStats extends DashboardStats {
+  companyId: number;
+  companyName: string;
+}

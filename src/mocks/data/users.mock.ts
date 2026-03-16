@@ -1,5 +1,6 @@
 import type { AuthUser } from '../../types';
 import type { User } from '../../types';
+import { mockCompanyUsers } from './companies.mock';
 
 export const mockUsers: User[] = [
   {
@@ -36,16 +37,18 @@ export const mockUsers: User[] = [
 
 const allModules = [
   { id: 1, name: 'Dashboard', route: '/dashboard', icon: 'DashboardOutlined', parentId: null, displayOrder: 1 },
-  { id: 2, name: 'Controles ISO', route: '/controls', icon: 'SafetyOutlined', parentId: null, displayOrder: 2 },
-  { id: 3, name: 'Declaración de Aplicabilidad', route: '/soa', icon: 'FileProtectOutlined', parentId: null, displayOrder: 3 },
-  { id: 4, name: 'Activos', route: '/assets', icon: 'DatabaseOutlined', parentId: null, displayOrder: 4 },
-  { id: 5, name: 'Administración', route: '/admin', icon: 'SettingOutlined', parentId: null, displayOrder: 5 },
+  { id: 8, name: 'Empresas', route: '/companies', icon: 'BankOutlined', parentId: null, displayOrder: 2 },
+  { id: 2, name: 'Controles ISO', route: '/controls', icon: 'SafetyOutlined', parentId: null, displayOrder: 3 },
+  { id: 3, name: 'Declaración de Aplicabilidad', route: '/soa', icon: 'FileProtectOutlined', parentId: null, displayOrder: 4 },
+  { id: 4, name: 'Activos', route: '/assets', icon: 'DatabaseOutlined', parentId: null, displayOrder: 5 },
+  { id: 5, name: 'Administración', route: '/admin', icon: 'SettingOutlined', parentId: null, displayOrder: 6 },
   { id: 6, name: 'Usuarios', route: '/admin/users', icon: 'TeamOutlined', parentId: 5, displayOrder: 1 },
   { id: 7, name: 'Roles y Permisos', route: '/admin/roles', icon: 'LockOutlined', parentId: 5, displayOrder: 2 },
 ];
 
 const allPermissions = [
   'dashboard:read',
+  'companies:read', 'companies:create', 'companies:update', 'companies:delete',
   'controls:read', 'controls:create', 'controls:update', 'controls:delete', 'controls:export',
   'soa:read', 'soa:update',
   'assets:read', 'assets:create', 'assets:update', 'assets:delete',
@@ -62,12 +65,12 @@ const permissionsByRole: Record<string, string[]> = {
   super_admin: allPermissions,
   admin: allPermissions.filter(p => !p.startsWith('audit_log')),
   auditor: [
-    'dashboard:read', 'controls:read', 'controls:export', 'soa:read',
+    'dashboard:read', 'companies:read', 'controls:read', 'controls:export', 'soa:read',
     'assets:read', 'audits:read', 'audits:create', 'audits:update',
     'risk:read', 'evidence:read', 'notifications:read',
   ],
   consultant: [
-    'dashboard:read', 'controls:read', 'controls:update', 'controls:export',
+    'dashboard:read', 'companies:read', 'controls:read', 'controls:update', 'controls:export',
     'soa:read', 'soa:update', 'assets:read', 'assets:create', 'assets:update',
     'risk:read', 'risk:create', 'risk:update', 'evidence:read', 'evidence:create',
     'notifications:read',
@@ -79,10 +82,10 @@ const permissionsByRole: Record<string, string[]> = {
 };
 
 const modulesByRole: Record<string, number[]> = {
-  super_admin: [1, 2, 3, 4, 5, 6, 7],
-  admin: [1, 2, 3, 4, 5, 6, 7],
-  auditor: [1, 2, 3, 4],
-  consultant: [1, 2, 3, 4],
+  super_admin: [1, 2, 3, 4, 5, 6, 7, 8],
+  admin: [1, 2, 3, 4, 5, 6, 7, 8],
+  auditor: [1, 2, 3, 4, 8],
+  consultant: [1, 2, 3, 4, 8],
   employee: [1, 2, 4],
 };
 
@@ -98,8 +101,7 @@ export function getAuthUser(userId: number): AuthUser | null {
     roles: user.roles.map(r => r.name),
     permissions: permissionsByRole[roleName] ?? [],
     modules: allModules.filter(m => (modulesByRole[roleName] ?? []).includes(m.id)),
-    companyId: 1,
-    companyName: 'TechCorp Solutions S.A.S.',
+    assignedCompanyIds: mockCompanyUsers.filter(cu => cu.userId === user.id).map(cu => cu.companyId),
   };
 }
 

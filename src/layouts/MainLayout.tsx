@@ -4,11 +4,13 @@ import { Layout, Dropdown, Avatar, Breadcrumb, theme } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useAuth } from '../hooks/useAuth';
 import Sidebar from './Sidebar';
+import CompanySelector from '../components/CompanySelector';
 
 const { Header, Content } = Layout;
 
 const breadcrumbMap: Record<string, string> = {
   dashboard: 'Dashboard',
+  companies: 'Empresas',
   controls: 'Controles ISO',
   soa: 'Declaración de Aplicabilidad',
   assets: 'Activos',
@@ -42,10 +44,11 @@ export default function MainLayout() {
             background: token.colorBgContainer,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
           }}
         >
+          <CompanySelector />
           <Dropdown
             menu={{
               items: [

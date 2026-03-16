@@ -5,6 +5,7 @@ import { controlsHandlers } from './handlers/controls.handlers';
 import { assetsHandlers } from './handlers/assets.handlers';
 import { dashboardHandlers } from './handlers/dashboard.handlers';
 import { adminHandlers } from './handlers/admin.handlers';
+import { companiesHandlers } from './handlers/companies.handlers';
 
 export const worker = setupWorker(
   ...authHandlers,
@@ -13,4 +14,5 @@ export const worker = setupWorker(
   ...assetsHandlers,
   ...dashboardHandlers,
   ...adminHandlers,
+  ...companiesHandlers,
 );

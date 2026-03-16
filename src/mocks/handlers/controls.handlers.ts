@@ -1,12 +1,13 @@
 import { http, HttpResponse } from 'msw';
-import { mockThemes, mockCompanyControls, mockSoA } from '../data/controls.mock';
+import { mockThemes, allMockCompanyControls, allMockSoA } from '../data/controls.mock';
 
 export const controlsHandlers = [
   http.get('/api/controls/themes', () => {
     return HttpResponse.json({ data: mockThemes });
   }),
 
-  http.get('/api/companies/:companyId/controls', ({ request }) => {
+  http.get('/api/companies/:companyId/controls', ({ params, request }) => {
+    const companyId = Number(params.companyId);
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') ?? '1', 10);
     const limit = parseInt(url.searchParams.get('limit') ?? '10', 10);
@@ -14,7 +15,7 @@ export const controlsHandlers = [
     const statusFilter = url.searchParams.get('status');
     const search = (url.searchParams.get('search') ?? '').toLowerCase();
 
-    let filtered = [...mockCompanyControls];
+    let filtered = allMockCompanyControls.filter(c => c.companyId === companyId);
     if (themeFilter) {
       const themeName = mockThemes.find(t => t.id === Number(themeFilter))?.name;
       if (themeName) filtered = filtered.filter(c => c.themeName === themeName);
@@ -37,19 +38,25 @@ export const controlsHandlers = [
   }),
 
   http.put('/api/companies/:companyId/controls/:id', async ({ params, request }) => {
-    const control = mockCompanyControls.find(c => c.id === Number(params.id));
+    const companyId = Number(params.companyId);
+    const control = allMockCompanyControls.find(c => c.companyId === companyId && c.controlId === Number(params.id));
     if (!control) return HttpResponse.json({ error: 'No encontrado' }, { status: 404 });
     const body = (await request.json()) as Record<string, unknown>;
     Object.assign(control, body, { updatedAt: new Date().toISOString() });
     return HttpResponse.json({ data: control });
   }),
 
-  http.get('/api/companies/:companyId/soa', () => {
-    return HttpResponse.json({ data: mockSoA });
+  http.get('/api/companies/:companyId/soa', ({ params }) => {
+    const companyId = Number(params.companyId);
+    const soaData = allMockSoA[companyId] ?? [];
+    return HttpResponse.json({ data: soaData });
   }),
 
   http.put('/api/companies/:companyId/soa/:controlId', async ({ params, request }) => {
-    const entry = mockSoA.find(s => s.controlId === Number(params.controlId));
+    const companyId = Number(params.companyId);
+    const soaData = allMockSoA[companyId];
+    if (!soaData) return HttpResponse.json({ error: 'No encontrado' }, { status: 404 });
+    const entry = soaData.find(s => s.controlId === Number(params.controlId));
     if (!entry) return HttpResponse.json({ error: 'No encontrado' }, { status: 404 });
     const body = (await request.json()) as Record<string, unknown>;
     Object.assign(entry, body);

@@ -1,17 +1,28 @@
 import apiClient from './client';
-import type { DashboardStats, ComplianceByTheme, RiskOverview, RecentActivity } from '../types';
+import type { DashboardStats, ComplianceByTheme, RiskOverview, RecentActivity, CompanySummary } from '../types';
 
 export const dashboardApi = {
-  stats() {
-    return apiClient.get<{ data: DashboardStats }>('/api/dashboard/stats');
+  stats(companyId?: number) {
+    return apiClient.get<{ data: DashboardStats }>('/api/dashboard/stats', {
+      params: companyId ? { companyId } : undefined,
+    });
   },
-  complianceProgress() {
-    return apiClient.get<{ data: ComplianceByTheme[] }>('/api/dashboard/compliance-progress');
+  complianceProgress(companyId?: number) {
+    return apiClient.get<{ data: ComplianceByTheme[] }>('/api/dashboard/compliance-progress', {
+      params: companyId ? { companyId } : undefined,
+    });
   },
-  riskOverview() {
-    return apiClient.get<{ data: RiskOverview[] }>('/api/dashboard/risk-overview');
+  riskOverview(companyId?: number) {
+    return apiClient.get<{ data: RiskOverview[] }>('/api/dashboard/risk-overview', {
+      params: companyId ? { companyId } : undefined,
+    });
   },
-  recentActivity() {
-    return apiClient.get<{ data: RecentActivity[] }>('/api/dashboard/recent-activity');
+  recentActivity(companyId?: number) {
+    return apiClient.get<{ data: RecentActivity[] }>('/api/dashboard/recent-activity', {
+      params: companyId ? { companyId } : undefined,
+    });
+  },
+  globalSummary() {
+    return apiClient.get<{ data: CompanySummary[] }>('/api/dashboard/global');
   },
 };

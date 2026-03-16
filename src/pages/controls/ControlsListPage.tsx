@@ -3,12 +3,12 @@ import { Table, Card, Tag, Select, Input, Typography, Space, Drawer, Form, Slide
 import type { ColumnsType } from 'antd/es/table';
 import { controlsApi } from '../../api/controls.api';
 import type { CompanyControl, IsoTheme, CompanyControlStatus, MaturityLevel, UpdateCompanyControlPayload } from '../../types';
+import { useCompany } from '../../hooks/useCompany';
+import NoCompanySelected from '../../components/NoCompanySelected';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
 const { Search } = Input;
-
-const COMPANY_ID = 1;
 
 const statusLabels: Record<CompanyControlStatus, string> = {
   pending: 'Pendiente',
@@ -35,6 +35,7 @@ const maturityLabels: Record<MaturityLevel, string> = {
 };
 
 export default function ControlsListPage() {
+  const { selectedCompany } = useCompany();
   const [controls, setControls] = useState<CompanyControl[]>([]);
   const [themes, setThemes] = useState<IsoTheme[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,10 +57,11 @@ export default function ControlsListPage() {
   }, []);
 
   useEffect(() => {
+    if (!selectedCompany) return;
     let ignore = false;
     const load = async () => {
       setLoading(true);
-      const { data } = await controlsApi.listCompanyControls(COMPANY_ID, {
+      const { data } = await controlsApi.listCompanyControls(selectedCompany.id, {
         themeId: themeFilter,
         status: statusFilter,
         search: search || undefined,
@@ -75,7 +77,7 @@ export default function ControlsListPage() {
     load();
     fetchControlsRef.current = load;
     return () => { ignore = true; };
-  }, [page, themeFilter, statusFilter, search]);
+  }, [selectedCompany, page, themeFilter, statusFilter, search]);
 
   const openDrawer = (record: CompanyControl) => {
     setSelected(record);
@@ -96,7 +98,7 @@ export default function ControlsListPage() {
       ...values,
       reviewDate: values.reviewDate?.toISOString(),
     };
-    await controlsApi.updateCompanyControl(COMPANY_ID, selected.id, payload);
+    await controlsApi.updateCompanyControl(selectedCompany!.id, selected.id, payload);
     message.success('Control actualizado');
     setDrawerOpen(false);
     fetchControlsRef.current?.();
@@ -127,6 +129,8 @@ export default function ControlsListPage() {
     },
     { title: 'Responsable', dataIndex: 'assignedUserName', width: 150, render: (v: string | null) => v ?? '—' },
   ];
+
+  if (!selectedCompany) return <NoCompanySelected feature="controles ISO" />;
 
   return (
     <>
