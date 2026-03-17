@@ -44,4 +44,12 @@ export type {
   ComplianceByTheme,
   RiskOverview,
   RecentActivity,
+  CompanyDashboardStats,
 } from './dashboard.types';
+export type {
+  Company,
+  CompanyUser,
+  CreateCompanyPayload,
+  UpdateCompanyPayload,
+  CompanySummary,
+} from './company.types';

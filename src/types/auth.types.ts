@@ -26,8 +26,7 @@ export interface AuthUser {
   roles: string[];
   permissions: string[];
   modules: UserModule[];
-  companyId: number | null;
-  companyName: string | null;
+  assignedCompanyIds: number[];
 }
 
 export interface UserModule {

@@ -1,6 +1,6 @@
-# Fix-ISO — Plataforma de Gestión ISO 27001:2022
+# Fix-ISO — Plataforma Multi-Tenant de Consultoría ISO 27001:2022
 
-Plataforma web para la implementación, seguimiento y gestión integral del estándar **ISO/IEC 27001:2022** en organizaciones. Cubre los 93 controles del Anexo A, gestión de activos de información, evaluación de riesgos, declaración de aplicabilidad (SoA) y administración de usuarios con control de acceso basado en roles (RBAC).
+Plataforma web multi-tenant para **firmas consultoras** que gestionan la implementación de **ISO/IEC 27001:2022** en múltiples empresas cliente. Cubre los 93 controles del Anexo A, gestión de activos de información, evaluación de riesgos, declaración de aplicabilidad (SoA) y administración de usuarios con control de acceso basado en roles (RBAC). Cada empresa cliente tiene sus datos completamente aislados (controles, activos, riesgos, SoA).
 
 ---
 
@@ -24,13 +24,14 @@ Plataforma web para la implementación, seguimiento y gestión integral del est�
 
 ## Visión general
 
-Fix-ISO permite a las organizaciones:
+Fix-ISO permite a las firmas consultoras:
 
+- **Gestionar múltiples empresas cliente** con selector de empresa en el header y datos completamente aislados por empresa.
 - **Implementar ISO 27001:2022** con seguimiento de los 93 controles del Anexo A organizados en 4 dominios (Organizacional, Personas, Físicos, Tecnológicos).
 - **Gestionar activos de información** con clasificación (público, interno, confidencial, restringido) y evaluación de riesgos por activo.
 - **Generar la Declaración de Aplicabilidad (SoA)** indicando qué controles aplican, cuáles no, y la justificación correspondiente.
-- **Administrar usuarios y permisos** con RBAC granular: 5 roles predefinidos y ~31 permisos con formato `módulo:acción`.
-- **Visualizar el estado de cumplimiento** mediante dashboard con indicadores, gráficas de cumplimiento por dominio y distribución de riesgo.
+- **Administrar usuarios y permisos** con RBAC granular: 5 roles predefinidos y ~35 permisos con formato `módulo:acción`.
+- **Visualizar el estado de cumplimiento** mediante dashboard dual: vista global con resumen de todas las empresas + vista detallada por empresa con indicadores y gráficas.
 
 El proyecto está diseñado para que **frontend y backend se desarrollen en paralelo** sin bloquearse entre sí, usando MSW (Mock Service Worker) en el frontend para simular la API completa.
 
@@ -51,9 +52,10 @@ El proyecto está diseñado para que **frontend y backend se desarrollen en para
 │       │                                                 │
 │  ┌────▼─────┐  ┌────────────┐  ┌──────────────────┐    │
 │  │AuthContext│  │ Hooks      │  │ Router + Guards  │    │
-│  │Permissions│  │ useAuth    │  │ AuthGuard        │    │
-│  └──────────┘  │ usePerms   │  │ PermissionGuard  │    │
-│                └────────────┘  └──────────────────┘    │
+│  │CompanyCon.│  │ useAuth    │  │ AuthGuard        │    │
+│  │Permissions│  │ usePerms   │  │ PermissionGuard  │    │
+│  └──────────┘  │ useCompany │  └──────────────────┘    │
+│                └────────────┘                           │
 └─────────────────────────────────────────────────────────┘
                         │
                    VITE_ENABLE_MOCKS=false
@@ -121,45 +123,55 @@ proyecto_fix-iso/
 │       │   ├── auth.api.ts           # login, refresh, logout, me
 │       │   ├── users.api.ts          # CRUD usuarios
 │       │   ├── controls.api.ts       # Temas, controles, SoA
-│       │   ├── assets.api.ts         # CRUD activos + riesgos
-│       │   ├── dashboard.api.ts      # Estadísticas y gráficas
+│       │   ├── assets.api.ts         # CRUD activos + riesgos (scoped por companyId)
+│       │   ├── companies.api.ts      # CRUD empresas + asignación usuarios
+│       │   ├── dashboard.api.ts      # Estadísticas, resumen global y por empresa
 │       │   └── admin.api.ts          # Roles, permisos, módulos
 │       ├── context/
 │       │   ├── AuthContext.ts        # Definición del contexto + tipos
-│       │   └── AuthProvider.tsx      # Provider con login/logout/refresh
+│       │   ├── AuthProvider.tsx      # Provider con login/logout/refresh
+│       │   ├── CompanyContext.ts     # Contexto de empresa seleccionada
+│       │   └── CompanyProvider.tsx   # Provider: carga empresas, persiste en sessionStorage
 │       ├── guards/
-│       │   ├── AuthGuard.tsx         # Guard de ruta: redirige a /login
+│       │   ├── AuthGuard.tsx         # Guard de ruta: redirige a /login + monta CompanyProvider
 │       │   └── PermissionGuard.tsx   # Guard de componente: 403 o hide
 │       ├── hooks/
 │       │   ├── useAuth.ts            # Acceso al contexto de auth
-│       │   └── usePermissions.ts     # hasPermission, hasAny, hasAll
+│       │   ├── usePermissions.ts     # hasPermission, hasAny, hasAll
+│       │   └── useCompany.ts         # selectedCompany, selectCompany, clearCompany
+│       ├── components/
+│       │   ├── CompanySelector.tsx   # Select en header: empresas + "Vista Global"
+│       │   └── NoCompanySelected.tsx # Empty state para páginas que requieren empresa
 │       ├── layouts/
-│       │   ├── MainLayout.tsx        # Header + Sidebar + Content
+│       │   ├── MainLayout.tsx        # Header (CompanySelector + avatar) + Sidebar + Content
 │       │   ├── AuthLayout.tsx        # Layout centrado para login
 │       │   └── Sidebar.tsx           # Menú dinámico según módulos/rol
 │       ├── mocks/
 │       │   ├── browser.ts            # Inicialización del worker MSW
 │       │   ├── data/                 # Datos mock con tipado fuerte
 │       │   │   ├── users.mock.ts     # 6 usuarios, mapeo roles→permisos
-│       │   │   ├── roles.mock.ts     # 5 roles, 31 permisos, grupos
-│       │   │   ├── controls.mock.ts  # 93 controles ISO, SoA, estados
-│       │   │   └── assets.mock.ts    # 10 activos, 8 evaluaciones riesgo
+│       │   │   ├── roles.mock.ts     # 5 roles, 35 permisos, grupos
+│       │   │   ├── controls.mock.ts  # 93 controles ISO, SoA, estados por empresa
+│       │   │   ├── assets.mock.ts    # 14 activos, 12 evaluaciones riesgo
+│       │   │   └── companies.mock.ts # 3 empresas, 9 asignaciones, catálogos
 │       │   └── handlers/             # Interceptores de peticiones
 │       │       ├── auth.handlers.ts
 │       │       ├── users.handlers.ts
 │       │       ├── controls.handlers.ts
 │       │       ├── assets.handlers.ts
+│       │       ├── companies.handlers.ts
 │       │       ├── dashboard.handlers.ts
 │       │       └── admin.handlers.ts
 │       ├── pages/
 │       │   ├── auth/LoginPage.tsx
-│       │   ├── dashboard/DashboardPage.tsx
+│       │   ├── dashboard/DashboardPage.tsx    # Dual: global o por empresa
+│       │   ├── companies/CompaniesPage.tsx    # CRUD empresas
 │       │   ├── controls/
-│       │   │   ├── ControlsListPage.tsx
-│       │   │   └── SoAPage.tsx
+│       │   │   ├── ControlsListPage.tsx          # Requiere empresa
+│       │   │   └── SoAPage.tsx                   # Requiere empresa
 │       │   ├── assets/
-│       │   │   ├── AssetsListPage.tsx
-│       │   │   └── AssetDetailPage.tsx
+│       │   │   ├── AssetsListPage.tsx            # Requiere empresa
+│       │   │   └── AssetDetailPage.tsx           # Requiere empresa
 │       │   ├── admin/
 │       │   │   ├── UsersPage.tsx
 │       │   │   └── RolesPage.tsx
@@ -174,6 +186,7 @@ proyecto_fix-iso/
 │           ├── user.types.ts
 │           ├── control.types.ts
 │           ├── asset.types.ts
+│           ├── company.types.ts
 │           ├── dashboard.types.ts
 │           └── common.types.ts
 │
@@ -241,15 +254,22 @@ Para conectar al backend real, cambiar `VITE_ENABLE_MOCKS` a `false`. El `baseUR
 - Tokens almacenados en memoria (no localStorage) para protección contra XSS.
 - Refresh automático transparente vía interceptor Axios en respuestas 401.
 
-### 2. Dashboard (`/dashboard`)
+### 2. Dashboard (`/dashboard`) — Modo Dual
 
-- **4 tarjetas KPI:** cumplimiento general (%), controles implementados, en progreso, activos de alto riesgo.
-- **Gráfico de barras apiladas:** cumplimiento por dominio ISO (Organizacional, Personas, Físico, Tecnológico).
-- **Gráfico de dona:** distribución de niveles de riesgo (Crítico, Alto, Medio, Bajo).
-- **Tabla de actividad reciente:** últimas acciones en el sistema.
+**Vista Global (sin empresa seleccionada):**
+- Grid de cards con resumen por empresa: nombre, sector, tamaño, % cumplimiento, nivel de riesgo, conteo de activos/controles.
+- Click en card → selecciona empresa y pasa a vista detallada.
+- Endpoint: `GET /api/dashboard/global`
+
+**Vista por Empresa (con empresa seleccionada):**
+- **4 tarjetas KPI:** cumplimiento general (%), controles implementados, en progreso, total activos.
+- **Gráfico de barras apiladas:** cumplimiento por dominio ISO.
+- **Gráfico de dona:** distribución de niveles de riesgo.
+- **Tabla de actividad reciente:** últimas acciones filtradas por empresa.
 
 ### 3. Controles ISO 27001 (`/controls`)
 
+- **Requiere empresa seleccionada.** Sin empresa, muestra indicación de selección.
 - Tabla paginada de los 93 controles del Anexo A con filtros por dominio, estado y búsqueda.
 - **Estados:** Pendiente, En progreso, Implementado, No conformidad, En revisión.
 - **Niveles de madurez:** Inicial, Gestionado, Definido, Medido, Optimizado (modelo CMM).
@@ -257,12 +277,14 @@ Para conectar al backend real, cambiar `VITE_ENABLE_MOCKS` a `false`. El `baseUR
 
 ### 4. Declaración de Aplicabilidad — SoA (`/soa`)
 
+- **Requiere empresa seleccionada.**
 - Tabla con los 93 controles y toggle de aplicabilidad.
 - Campo de justificación obligatorio para controles excluidos.
 - Estado de implementación por control.
 
 ### 5. Gestión de Activos (`/assets`)
 
+- **Requiere empresa seleccionada.** Todos los endpoints usan `/api/companies/:companyId/assets/...`.
 - CRUD completo con filtros por tipo (información, software, hardware, servicio, personas, intangible) y clasificación.
 - **Detalle de activo** (`/assets/:id`): ficha descriptiva + tabla de evaluaciones de riesgo.
 - **Evaluación de riesgos por activo:** amenaza, vulnerabilidad, probabilidad (1-5), impacto (1-5), score calculado, nivel de riesgo, tratamiento (mitigar, aceptar, transferir, evitar).
@@ -278,6 +300,14 @@ Para conectar al backend real, cambiar `VITE_ENABLE_MOCKS` a `false`. El `baseUR
 - Tabla de roles con conteo de usuarios y permisos.
 - Gestión de permisos por rol mediante checkboxes agrupados por módulo.
 - 5 roles predefinidos: Super Admin, Administrador, Auditor, Consultor, Empleado.
+
+### 8. Gestión de Empresas (`/companies`)
+
+- CRUD de empresas cliente: nombre, NIT, sector (catálogo), tamaño (catálogo), contacto principal.
+- Tabla con filtros y búsqueda.
+- Modal para crear/editar empresa con campos validados.
+- Asignación de usuarios a empresas (vista desde la administración de empresa).
+- Catálogos de sectores económicos y tamaños de empresa cargados desde API.
 
 ---
 
@@ -321,12 +351,13 @@ controls:read, controls:create, controls:update, controls:delete, controls:expor
 soa:read, soa:update
 assets:read, assets:create, assets:update, assets:delete
 risk:read, risk:create, risk:update
+companies:read, companies:create, companies:update, companies:delete
 audits:read
 ```
 
 **Guards en el frontend:**
 
-- `AuthGuard` — Componente de ruta. Si el usuario no está autenticado, redirige a `/login`.
+- `AuthGuard` — Componente de ruta. Si el usuario no está autenticado, redirige a `/login`. Envuelve las rutas autenticadas con `CompanyProvider` para que el contexto de empresa esté disponible en toda la app.
 - `PermissionGuard` — Componente wrapper. Recibe `permission` o `permissions[]` con modo `any`/`all`. Muestra el contenido solo si el usuario tiene el permiso requerido, de lo contrario muestra 403 o un fallback personalizado.
 - `usePermissions()` — Hook con `hasPermission()`, `hasAnyPermission()`, `hasAllPermissions()`.
 
@@ -338,7 +369,7 @@ Endpoints implementados (mock) y que el backend debe replicar:
 
 ```
 Autenticación
-  POST   /api/auth/login              { email, password } → { accessToken, refreshToken, user }
+  POST   /api/auth/login              { email, password } → { accessToken, refreshToken, user (con assignedCompanyIds[]) }
   POST   /api/auth/refresh            { refreshToken }    → { accessToken, refreshToken }
   POST   /api/auth/logout             { refreshToken }    → { message }
   GET    /api/auth/me                 Bearer token        → { data: AuthUser }
@@ -359,19 +390,34 @@ Declaración de Aplicabilidad
   GET    /api/companies/:id/soa       → { data: SoAEntry[] }
   PUT    /api/companies/:id/soa/:controlId  UpdateSoAPayload → { data: SoAEntry }
 
-Activos
-  GET    /api/assets                  ?assetType, classification, search, page, limit → PaginatedResponse<Asset>
-  GET    /api/assets/:id              → { data: Asset & { risks: AssetRiskAssessment[] } }
-  POST   /api/assets                  CreateAssetPayload  → { data: Asset }
-  PUT    /api/assets/:id              UpdateAssetPayload  → { data: Asset }
-  DELETE /api/assets/:id              → 204
-  POST   /api/assets/:id/risks       CreateRiskPayload   → { data: AssetRiskAssessment }
+Activos (scoped por empresa)
+  GET    /api/companies/:companyId/assets  ?assetType, classification, search, page, limit → PaginatedResponse<Asset>
+  GET    /api/companies/:companyId/assets/:id  → { data: Asset & { risks: AssetRiskAssessment[] } }
+  POST   /api/companies/:companyId/assets  CreateAssetPayload  → { data: Asset }
+  PUT    /api/companies/:companyId/assets/:id  UpdateAssetPayload  → { data: Asset }
+  DELETE /api/companies/:companyId/assets/:id  → 204
+  POST   /api/companies/:companyId/assets/:id/risks  CreateRiskPayload  → { data: AssetRiskAssessment }
+
+Empresas
+  GET    /api/companies                ?search, sector, size, page, limit → PaginatedResponse<Company>
+  GET    /api/companies/:id            → { data: Company }
+  POST   /api/companies                CreateCompanyPayload → { data: Company }
+  PUT    /api/companies/:id            UpdateCompanyPayload → { data: Company }
+  DELETE /api/companies/:id            → 204
+  GET    /api/companies/:companyId/users  → { data: CompanyUser[] }
+  POST   /api/companies/:companyId/users  { userId, role? } → { data: CompanyUser }
+  DELETE /api/companies/:companyId/users/:userId  → 204
+
+Catálogos
+  GET    /api/catalogs/sectors          → { data: { id, name }[] }
+  GET    /api/catalogs/company-sizes    → { data: { id, name }[] }
 
 Dashboard
-  GET    /api/dashboard/stats              → { data: DashboardStats }
-  GET    /api/dashboard/compliance-progress → { data: ComplianceByTheme[] }
-  GET    /api/dashboard/risk-overview      → { data: RiskOverview[] }
-  GET    /api/dashboard/recent-activity    → { data: RecentActivity[] }
+  GET    /api/dashboard/global               → { data: CompanySummary[] }
+  GET    /api/dashboard/stats?companyId=      → { data: DashboardStats }
+  GET    /api/dashboard/compliance-progress?companyId= → { data: ComplianceByTheme[] }
+  GET    /api/dashboard/risk-overview?companyId=       → { data: RiskOverview[] }
+  GET    /api/dashboard/recent-activity?companyId=     → { data: RecentActivity[] }
 
 Administración
   GET    /api/roles                   → { data: Role[] }
@@ -428,14 +474,16 @@ VITE_ENABLE_MOCKS=false
 
 | Recurso | Cantidad | Detalles |
 |---|---|---|
-| Usuarios | 6 | Con roles variados (admin, auditor, consultant, employee) |
+| Empresas | 3 | TechCorp (Tecnología), Financiera del Valle (Financiero), Hospital San Rafael (Salud) |
+| Usuarios | 6 | Con roles variados y asignaciones a empresas |
+| Asignaciones | 9 | Vínculos usuario-empresa con roles descriptivos |
 | Roles | 5 | super_admin, admin, auditor, consultant, employee |
-| Permisos | 31 | Agrupados por módulo |
+| Permisos | 35 | Agrupados por módulo (incluye companies:*) |
 | Controles ISO | 93 | Los 93 controles del Anexo A ISO 27001:2022 |
-| Controles empresa | 93 | Con estados y madurez variados |
-| Entradas SoA | 93 | Aplicabilidad y justificación |
-| Activos | 10 | Tipos: servidor, código fuente, laptops, etc. |
-| Evaluaciones riesgo | 8 | Con cálculo automático de score y nivel |
+| Controles empresa | 93 por empresa | Con estados y madurez variados, aislados por empresa |
+| Entradas SoA | 93 por empresa | Aplicabilidad y justificación por empresa |
+| Activos | 14 | 10 en empresa 1, 4 en empresa 2 |
+| Evaluaciones riesgo | 12 | Con cálculo automático de score y nivel |
 
 ---
 
@@ -500,6 +548,9 @@ Con MSW activo, se puede iniciar sesión con cualquier usuario registrado en los
 - [x] Sistema de autenticación (AuthContext + guards)
 - [x] RBAC con permisos granulares (hooks + guards)
 - [x] Login, Dashboard, Controles, SoA, Activos, Usuarios, Roles
+- [x] Multi-tenant: CompanyContext, CompanySelector, datos aislados por empresa
+- [x] Dashboard dual: vista global (resumen empresas) + vista por empresa
+- [x] Módulo de gestión de empresas (CRUD + catálogos)
 - [x] Build sin errores TypeScript
 
 ### Pendiente — Frontend

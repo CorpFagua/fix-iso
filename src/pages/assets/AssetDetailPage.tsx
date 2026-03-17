@@ -9,6 +9,8 @@ import { assetsApi } from '../../api/assets.api';
 import type {
   Asset, AssetRiskAssessment, AssetType, AssetClassification, RiskLevel, RiskTreatment, CreateRiskPayload,
 } from '../../types';
+import { useCompany } from '../../hooks/useCompany';
+import NoCompanySelected from '../../components/NoCompanySelected';
 
 const { Title } = Typography;
 
@@ -35,6 +37,7 @@ const treatmentLabels: Record<RiskTreatment, string> = {
 export default function AssetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { selectedCompany } = useCompany();
   const [asset, setAsset] = useState<Asset | null>(null);
   const [risks, setRisks] = useState<AssetRiskAssessment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,10 +47,11 @@ export default function AssetDetailPage() {
   const loadRef = useRef<(() => void) | undefined>(undefined);
 
   useEffect(() => {
+    if (!selectedCompany) return;
     let ignore = false;
     const load = async () => {
       setLoading(true);
-      const { data } = await assetsApi.getById(Number(id));
+      const { data } = await assetsApi.getById(selectedCompany.id, Number(id));
       if (!ignore) {
         setAsset(data.data);
         setRisks(data.data.risks);
@@ -57,18 +61,19 @@ export default function AssetDetailPage() {
     load();
     loadRef.current = load;
     return () => { ignore = true; };
-  }, [id]);
+  }, [id, selectedCompany]);
 
   const handleAddRisk = async () => {
     const values = await form.validateFields();
     const payload: CreateRiskPayload = values;
-    await assetsApi.addRisk(Number(id), payload);
+    await assetsApi.addRisk(selectedCompany!.id, Number(id), payload);
     message.success('Riesgo registrado');
     setModalOpen(false);
     form.resetFields();
     loadRef.current?.();
   };
 
+  if (!selectedCompany) return <NoCompanySelected feature="detalle de activos" />;
   if (loading || !asset) return <Spin size="large" style={{ display: 'block', margin: '80px auto' }} />;
 
   const riskColumns: ColumnsType<AssetRiskAssessment> = [

@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router';
 import { Spin } from 'antd';
 import { useAuth } from '../hooks/useAuth';
+import CompanyProvider from '../context/CompanyProvider';
 
 export default function AuthGuard() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -17,5 +18,9 @@ export default function AuthGuard() {
     return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <CompanyProvider>
+      <Outlet />
+    </CompanyProvider>
+  );
 }

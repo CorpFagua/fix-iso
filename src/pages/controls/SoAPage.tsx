@@ -3,22 +3,24 @@ import { Table, Card, Switch, Input, Tag, Typography, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { controlsApi } from '../../api/controls.api';
 import type { SoAEntry } from '../../types';
+import { useCompany } from '../../hooks/useCompany';
+import NoCompanySelected from '../../components/NoCompanySelected';
 
 const { Title } = Typography;
 
-const COMPANY_ID = 1;
-
 export default function SoAPage() {
+  const { selectedCompany } = useCompany();
   const [entries, setEntries] = useState<SoAEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadRef = useRef<(() => void) | undefined>(undefined);
 
   useEffect(() => {
+    if (!selectedCompany) return;
     let ignore = false;
     const load = async () => {
       setLoading(true);
-      const { data } = await controlsApi.getSoA(COMPANY_ID);
+      const { data } = await controlsApi.getSoA(selectedCompany.id);
       if (!ignore) {
         setEntries(data.data);
         setLoading(false);
@@ -27,10 +29,10 @@ export default function SoAPage() {
     load();
     loadRef.current = load;
     return () => { ignore = true; };
-  }, []);
+  }, [selectedCompany]);
 
   const toggleApplicable = async (record: SoAEntry) => {
-    await controlsApi.updateSoA(COMPANY_ID, record.controlId, {
+    await controlsApi.updateSoA(selectedCompany!.id, record.controlId, {
       applicable: !record.applicable,
       justification: record.justification ?? undefined,
     });
@@ -39,7 +41,7 @@ export default function SoAPage() {
   };
 
   const updateJustification = async (record: SoAEntry, justification: string) => {
-    await controlsApi.updateSoA(COMPANY_ID, record.controlId, {
+    await controlsApi.updateSoA(selectedCompany!.id, record.controlId, {
       applicable: record.applicable,
       justification,
     });
@@ -88,6 +90,8 @@ export default function SoAPage() {
       ),
     },
   ];
+
+  if (!selectedCompany) return <NoCompanySelected feature="la Declaración de Aplicabilidad" />;
 
   return (
     <>

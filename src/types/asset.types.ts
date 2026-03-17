@@ -36,7 +36,6 @@ export interface Asset {
 }
 
 export interface CreateAssetPayload {
-  companyId: number;
   name: string;
   description?: string;
   assetType: AssetType;

@@ -9,28 +9,28 @@ import type {
 } from '../types';
 
 export const assetsApi = {
-  list(params?: {
+  list(companyId: number, params?: {
     assetType?: string;
     classification?: string;
     search?: string;
     page?: number;
     limit?: number;
   }) {
-    return apiClient.get<PaginatedResponse<Asset>>('/api/assets', { params });
+    return apiClient.get<PaginatedResponse<Asset>>(`/api/companies/${companyId}/assets`, { params });
   },
-  getById(id: number) {
-    return apiClient.get<{ data: Asset & { risks: AssetRiskAssessment[] } }>(`/api/assets/${id}`);
+  getById(companyId: number, id: number) {
+    return apiClient.get<{ data: Asset & { risks: AssetRiskAssessment[] } }>(`/api/companies/${companyId}/assets/${id}`);
   },
-  create(payload: CreateAssetPayload) {
-    return apiClient.post<{ data: Asset }>('/api/assets', payload);
+  create(companyId: number, payload: CreateAssetPayload) {
+    return apiClient.post<{ data: Asset }>(`/api/companies/${companyId}/assets`, payload);
   },
-  update(id: number, payload: UpdateAssetPayload) {
-    return apiClient.put<{ data: Asset }>(`/api/assets/${id}`, payload);
+  update(companyId: number, id: number, payload: UpdateAssetPayload) {
+    return apiClient.put<{ data: Asset }>(`/api/companies/${companyId}/assets/${id}`, payload);
   },
-  remove(id: number) {
-    return apiClient.delete(`/api/assets/${id}`);
+  remove(companyId: number, id: number) {
+    return apiClient.delete(`/api/companies/${companyId}/assets/${id}`);
   },
-  addRisk(assetId: number, payload: CreateRiskPayload) {
-    return apiClient.post<{ data: AssetRiskAssessment }>(`/api/assets/${assetId}/risks`, payload);
+  addRisk(companyId: number, assetId: number, payload: CreateRiskPayload) {
+    return apiClient.post<{ data: AssetRiskAssessment }>(`/api/companies/${companyId}/assets/${assetId}/risks`, payload);
   },
 };

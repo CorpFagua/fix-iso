@@ -127,44 +127,63 @@ const assignees = [
   { id: 5, name: 'Miguel Sánchez' },
 ];
 
-function seeded(i: number): number {
-  return ((i * 7 + 13) % 100);
+function generateCompanyControls(companyId: number, seed: number): CompanyControl[] {
+  return mockIsoControls.map((ctrl, i) => {
+    const s = ((i * 7 + seed) % 100);
+    const statusIdx = s < 40 ? 0 : s < 60 ? 1 : s < 80 ? 2 : s < 90 ? 3 : 4;
+    const status = statuses[statusIdx];
+    const matIdx = status === 'implemented' ? 3 + (i % 2) : status === 'in_progress' ? 1 + (i % 2) : 0;
+    const compliance = status === 'implemented' ? 100 : status === 'in_progress' ? 30 + (s % 50) : status === 'under_review' ? 70 + (s % 25) : 0;
+    const assignee = assignees[i % assignees.length];
+
+    return {
+      id: ctrl.id + (companyId - 1) * 1000,
+      companyId,
+      controlId: ctrl.id,
+      code: ctrl.code,
+      title: ctrl.title,
+      themeName: ctrl.themeName,
+      status,
+      maturityLevel: maturityLevels[matIdx],
+      compliancePercentage: compliance,
+      assignedUserName: status !== 'pending' ? assignee.name : null,
+      assignedUserId: status !== 'pending' ? assignee.id : null,
+      implementationDate: status === 'implemented' ? '2026-02-15' : null,
+      reviewDate: status === 'implemented' ? '2026-08-15' : null,
+      notes: null,
+      createdAt: '2025-06-01T00:00:00Z',
+      updatedAt: '2026-03-10T00:00:00Z',
+    };
+  });
 }
 
-export const mockCompanyControls: CompanyControl[] = mockIsoControls.map((ctrl, i) => {
-  const s = seeded(i);
-  const statusIdx = s < 40 ? 0 : s < 60 ? 1 : s < 80 ? 2 : s < 90 ? 3 : 4;
-  const status = statuses[statusIdx];
-  const matIdx = status === 'implemented' ? 3 + (i % 2) : status === 'in_progress' ? 1 + (i % 2) : 0;
-  const compliance = status === 'implemented' ? 100 : status === 'in_progress' ? 30 + (s % 50) : status === 'under_review' ? 70 + (s % 25) : 0;
-  const assignee = assignees[i % assignees.length];
+// Company 1: TechCorp (seed 13 = original)
+export const mockCompanyControls: CompanyControl[] = generateCompanyControls(1, 13);
 
-  return {
-    id: ctrl.id,
-    companyId: 1,
+// Company 2: Financiera del Valle (seed 37 = different distribution)
+export const mockCompanyControls2: CompanyControl[] = generateCompanyControls(2, 37);
+
+// All company controls combined
+export const allMockCompanyControls: CompanyControl[] = [...mockCompanyControls, ...mockCompanyControls2];
+
+function generateSoA(companyId: number): SoAEntry[] {
+  return mockIsoControls.map(ctrl => ({
     controlId: ctrl.id,
     code: ctrl.code,
     title: ctrl.title,
     themeName: ctrl.themeName,
-    status,
-    maturityLevel: maturityLevels[matIdx],
-    compliancePercentage: compliance,
-    assignedUserName: status !== 'pending' ? assignee.name : null,
-    assignedUserId: status !== 'pending' ? assignee.id : null,
-    implementationDate: status === 'implemented' ? '2026-02-15' : null,
-    reviewDate: status === 'implemented' ? '2026-08-15' : null,
-    notes: null,
-    createdAt: '2025-06-01T00:00:00Z',
-    updatedAt: '2026-03-10T00:00:00Z',
-  };
-});
+    applicable: companyId === 1
+      ? (ctrl.id !== 52 && ctrl.id !== 73)
+      : (ctrl.id !== 44 && ctrl.id !== 59),
+    justification: companyId === 1
+      ? (ctrl.id === 52 ? 'No aplica: la empresa opera 100% remoto' : ctrl.id === 73 ? 'No aplica: la infraestructura es 100% cloud SaaS' : null)
+      : (ctrl.id === 44 ? 'No aplica: todo el personal es presencial' : ctrl.id === 59 ? 'No aplica: no se reutilizan equipos' : null),
+    implementationStatus: (companyId === 1 ? (ctrl.id === 52 || ctrl.id === 73) : (ctrl.id === 44 || ctrl.id === 59))
+      ? 'not_applicable'
+      : 'in_progress',
+  }));
+}
 
-export const mockSoA: SoAEntry[] = mockIsoControls.map(ctrl => ({
-  controlId: ctrl.id,
-  code: ctrl.code,
-  title: ctrl.title,
-  themeName: ctrl.themeName,
-  applicable: ctrl.id !== 52 && ctrl.id !== 73,
-  justification: ctrl.id === 52 ? 'No aplica: la empresa opera 100% remoto' : ctrl.id === 73 ? 'No aplica: la infraestructura es 100% cloud SaaS' : null,
-  implementationStatus: ctrl.id === 52 || ctrl.id === 73 ? 'not_applicable' : 'in_progress',
-}));
+export const mockSoA: SoAEntry[] = generateSoA(1);
+export const mockSoA2: SoAEntry[] = generateSoA(2);
+export const allMockSoA: Record<number, SoAEntry[]> = { 1: mockSoA, 2: mockSoA2 };

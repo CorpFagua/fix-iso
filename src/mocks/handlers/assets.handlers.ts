@@ -2,7 +2,8 @@ import { http, HttpResponse } from 'msw';
 import { mockAssets, mockAssetRisks } from '../data/assets.mock';
 
 export const assetsHandlers = [
-  http.get('/api/assets', ({ request }) => {
+  http.get('/api/companies/:companyId/assets', ({ params, request }) => {
+    const companyId = Number(params.companyId);
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') ?? '1', 10);
     const limit = parseInt(url.searchParams.get('limit') ?? '10', 10);
@@ -10,7 +11,7 @@ export const assetsHandlers = [
     const classFilter = url.searchParams.get('classification');
     const search = (url.searchParams.get('search') ?? '').toLowerCase();
 
-    let filtered = [...mockAssets];
+    let filtered = mockAssets.filter(a => a.companyId === companyId);
     if (typeFilter) filtered = filtered.filter(a => a.assetType === typeFilter);
     if (classFilter) filtered = filtered.filter(a => a.classification === classFilter);
     if (search) filtered = filtered.filter(a => a.name.toLowerCase().includes(search));
@@ -25,18 +26,19 @@ export const assetsHandlers = [
     });
   }),
 
-  http.get('/api/assets/:id', ({ params }) => {
-    const asset = mockAssets.find(a => a.id === Number(params.id));
+  http.get('/api/companies/:companyId/assets/:id', ({ params }) => {
+    const asset = mockAssets.find(a => a.id === Number(params.id) && a.companyId === Number(params.companyId));
     if (!asset) return HttpResponse.json({ error: 'No encontrado' }, { status: 404 });
     const risks = mockAssetRisks.filter(r => r.assetId === asset.id);
     return HttpResponse.json({ data: { ...asset, risks } });
   }),
 
-  http.post('/api/assets', async ({ request }) => {
+  http.post('/api/companies/:companyId/assets', async ({ params, request }) => {
+    const companyId = Number(params.companyId);
     const body = (await request.json()) as Record<string, unknown>;
     const newAsset = {
       id: mockAssets.length + 1,
-      companyId: 1,
+      companyId,
       name: body.name as string,
       description: (body.description as string) ?? null,
       assetType: body.assetType as string,
@@ -55,22 +57,22 @@ export const assetsHandlers = [
     return HttpResponse.json({ data: newAsset }, { status: 201 });
   }),
 
-  http.put('/api/assets/:id', async ({ params, request }) => {
-    const asset = mockAssets.find(a => a.id === Number(params.id));
+  http.put('/api/companies/:companyId/assets/:id', async ({ params, request }) => {
+    const asset = mockAssets.find(a => a.id === Number(params.id) && a.companyId === Number(params.companyId));
     if (!asset) return HttpResponse.json({ error: 'No encontrado' }, { status: 404 });
     const body = (await request.json()) as Record<string, unknown>;
     Object.assign(asset, body, { updatedAt: new Date().toISOString() });
     return HttpResponse.json({ data: asset });
   }),
 
-  http.delete('/api/assets/:id', ({ params }) => {
-    const idx = mockAssets.findIndex(a => a.id === Number(params.id));
+  http.delete('/api/companies/:companyId/assets/:id', ({ params }) => {
+    const idx = mockAssets.findIndex(a => a.id === Number(params.id) && a.companyId === Number(params.companyId));
     if (idx === -1) return HttpResponse.json({ error: 'No encontrado' }, { status: 404 });
     mockAssets.splice(idx, 1);
     return HttpResponse.json({ message: 'Activo eliminado' });
   }),
 
-  http.post('/api/assets/:id/risks', async ({ params, request }) => {
+  http.post('/api/companies/:companyId/assets/:id/risks', async ({ params, request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     const likelihood = body.likelihood as number;
     const impact = body.impact as number;

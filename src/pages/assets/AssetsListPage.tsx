@@ -5,11 +5,11 @@ import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { assetsApi } from '../../api/assets.api';
 import type { Asset, AssetType, AssetClassification, CreateAssetPayload } from '../../types';
+import { useCompany } from '../../hooks/useCompany';
+import NoCompanySelected from '../../components/NoCompanySelected';
 
 const { Title } = Typography;
 const { Search } = Input;
-
-const COMPANY_ID = 1;
 
 const typeLabels: Record<AssetType, string> = {
   information: 'Información',
@@ -36,6 +36,7 @@ const classColors: Record<AssetClassification, string> = {
 
 export default function AssetsListPage() {
   const navigate = useNavigate();
+  const { selectedCompany } = useCompany();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -49,10 +50,11 @@ export default function AssetsListPage() {
   const fetchAssetsRef = useRef<(() => void) | undefined>(undefined);
 
   useEffect(() => {
+    if (!selectedCompany) return;
     let ignore = false;
     const load = async () => {
       setLoading(true);
-      const { data } = await assetsApi.list({
+      const { data } = await assetsApi.list(selectedCompany.id, {
         assetType: typeFilter,
         classification: classFilter,
         search: search || undefined,
@@ -68,16 +70,15 @@ export default function AssetsListPage() {
     load();
     fetchAssetsRef.current = load;
     return () => { ignore = true; };
-  }, [page, typeFilter, classFilter, search]);
+  }, [selectedCompany, page, typeFilter, classFilter, search]);
 
   const handleCreate = async () => {
     const values = await form.validateFields();
     const payload: CreateAssetPayload = {
       ...values,
-      companyId: COMPANY_ID,
       ownerId: 1,
     };
-    await assetsApi.create(payload);
+    await assetsApi.create(selectedCompany!.id, payload);
     message.success('Activo creado');
     setModalOpen(false);
     form.resetFields();
@@ -85,7 +86,7 @@ export default function AssetsListPage() {
   };
 
   const handleDelete = async (id: number) => {
-    await assetsApi.remove(id);
+    await assetsApi.remove(selectedCompany!.id, id);
     message.success('Activo eliminado');
     fetchAssetsRef.current?.();
   };
@@ -128,6 +129,8 @@ export default function AssetsListPage() {
       ),
     },
   ];
+
+  if (!selectedCompany) return <NoCompanySelected feature="gestión de activos" />;
 
   return (
     <>
