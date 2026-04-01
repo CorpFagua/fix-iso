@@ -1,6 +1,6 @@
-# Fix-ISO — Plataforma Multi-Tenant de Consultoría ISO 27001:2022
+# Fix-ISO — Herramienta Interna de Consultoría ISO 27001:2022
 
-Plataforma web multi-tenant para **firmas consultoras** que gestionan la implementación de **ISO/IEC 27001:2022** en múltiples empresas cliente. Cubre los 93 controles del Anexo A, gestión de activos de información, evaluación de riesgos, declaración de aplicabilidad (SoA) y administración de usuarios con control de acceso basado en roles (RBAC). Cada empresa cliente tiene sus datos completamente aislados (controles, activos, riesgos, SoA).
+Herramienta interna para una **empresa consultora de seguridad informática** que gestiona proyectos de implementación, auditoría y capacitación **ISO/IEC 27001:2022** en múltiples empresas cliente. Los usuarios son el personal de la consultora (auditores, implementadores, capacitadores). Cubre los 93 controles del Anexo A, gestión de activos de información, evaluación de riesgos, declaración de aplicabilidad (SoA) y administración de usuarios con control de acceso basado en roles (RBAC). Cada empresa cliente tiene sus datos completamente aislados (controles, activos, riesgos, SoA).
 
 ---
 
@@ -24,14 +24,14 @@ Plataforma web multi-tenant para **firmas consultoras** que gestionan la impleme
 
 ## Visión general
 
-Fix-ISO permite a las firmas consultoras:
+Fix-ISO es la herramienta de trabajo del personal de la consultora:
 
-- **Gestionar múltiples empresas cliente** con selector de empresa en el header y datos completamente aislados por empresa.
+- **Gestionar múltiples empresas cliente** con selector de cliente en el header y datos completamente aislados por empresa.
 - **Implementar ISO 27001:2022** con seguimiento de los 93 controles del Anexo A organizados en 4 dominios (Organizacional, Personas, Físicos, Tecnológicos).
 - **Gestionar activos de información** con clasificación (público, interno, confidencial, restringido) y evaluación de riesgos por activo.
 - **Generar la Declaración de Aplicabilidad (SoA)** indicando qué controles aplican, cuáles no, y la justificación correspondiente.
-- **Administrar usuarios y permisos** con RBAC granular: 5 roles predefinidos y ~35 permisos con formato `módulo:acción`.
-- **Visualizar el estado de cumplimiento** mediante dashboard dual: vista global con resumen de todas las empresas + vista detallada por empresa con indicadores y gráficas.
+- **Administrar personal y permisos** con RBAC granular: 5 roles predefinidos y ~35 permisos con formato `módulo:acción`.
+- **Visualizar el estado de cumplimiento** mediante dashboard dual: vista global con resumen de todos los clientes + vista detallada por cliente con indicadores y gráficas.
 
 El proyecto está diseñado para que **frontend y backend se desarrollen en paralelo** sin bloquearse entre sí, usando MSW (Mock Service Worker) en el frontend para simular la API completa.
 

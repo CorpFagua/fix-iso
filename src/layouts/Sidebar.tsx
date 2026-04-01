@@ -10,6 +10,7 @@ import {
   TeamOutlined,
   LockOutlined,
   BankOutlined,
+  BookOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useAuth } from '../hooks/useAuth';
@@ -25,6 +26,7 @@ const iconMap: Record<string, React.ReactNode> = {
   TeamOutlined: <TeamOutlined />,
   LockOutlined: <LockOutlined />,
   BankOutlined: <BankOutlined />,
+  BookOutlined: <BookOutlined />,
 };
 
 interface Props {
@@ -44,13 +46,13 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
       .filter(m => m.parentId === null)
       .sort((a, b) => a.displayOrder - b.displayOrder);
 
-    return roots.map(root => {
+    return roots.reduce<NonNullable<MenuProps['items']>>((acc, root) => {
       const children = modules
         .filter(m => m.parentId === root.id)
         .sort((a, b) => a.displayOrder - b.displayOrder);
 
       if (children.length > 0) {
-        return {
+        acc.push({
           key: root.route,
           icon: iconMap[root.icon] ?? <SettingOutlined />,
           label: root.name,
@@ -59,21 +61,24 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
             icon: iconMap[child.icon],
             label: child.name,
           })),
-        };
+        });
+        return acc;
       }
 
-      return {
+      acc.push({
         key: root.route,
         icon: iconMap[root.icon] ?? <DashboardOutlined />,
         label: root.name,
-      };
-    });
+      });
+      return acc;
+    }, []);
   }, [user]);
 
   const selectedKey = useMemo(() => {
     const path = location.pathname;
     if (path.startsWith('/admin/users')) return '/admin/users';
     if (path.startsWith('/admin/roles')) return '/admin/roles';
+    if (path.startsWith('/catalog')) return '/catalog';
     if (path.startsWith('/controls')) return '/controls';
     if (path.startsWith('/assets')) return '/assets';
     if (path.startsWith('/companies')) return '/companies';
@@ -82,7 +87,7 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
   }, [location.pathname]);
 
   const openKey = useMemo(() => {
-    if (location.pathname.startsWith('/admin')) return ['/admin'];
+    if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/catalog')) return ['/admin'];
     return [];
   }, [location.pathname]);
 

@@ -1,6 +1,7 @@
 import apiClient from './client';
 import type {
   IsoTheme,
+  IsoControl,
   CompanyControl,
   UpdateCompanyControlPayload,
   SoAEntry,
@@ -8,9 +9,22 @@ import type {
   PaginatedResponse,
 } from '../types';
 
+export interface UpdateCatalogControlPayload {
+  title?: string;
+  description?: string;
+  controlType?: 'preventive' | 'detective' | 'corrective';
+  properties?: string;
+}
+
 export const controlsApi = {
   listThemes() {
     return apiClient.get<{ data: IsoTheme[] }>('/api/controls/themes');
+  },
+  listCatalog(params?: { themeId?: number; controlType?: string; search?: string; page?: number; limit?: number }) {
+    return apiClient.get<PaginatedResponse<IsoControl>>('/api/controls', { params });
+  },
+  updateCatalogControl(id: number, payload: UpdateCatalogControlPayload) {
+    return apiClient.put<{ data: IsoControl }>(`/api/controls/${id}`, payload);
   },
   listCompanyControls(
     companyId: number,
