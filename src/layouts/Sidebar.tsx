@@ -11,6 +11,7 @@ import {
   LockOutlined,
   BankOutlined,
   BookOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useAuth } from '../hooks/useAuth';
@@ -27,6 +28,7 @@ const iconMap: Record<string, React.ReactNode> = {
   LockOutlined: <LockOutlined />,
   BankOutlined: <BankOutlined />,
   BookOutlined: <BookOutlined />,
+  AppstoreOutlined: <AppstoreOutlined />,
 };
 
 interface Props {
@@ -78,6 +80,7 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
     const path = location.pathname;
     if (path.startsWith('/admin/users')) return '/admin/users';
     if (path.startsWith('/admin/roles')) return '/admin/roles';
+    if (path.startsWith('/admin/modules')) return '/admin/modules';
     if (path.startsWith('/catalog')) return '/catalog';
     if (path.startsWith('/controls')) return '/controls';
     if (path.startsWith('/assets')) return '/assets';

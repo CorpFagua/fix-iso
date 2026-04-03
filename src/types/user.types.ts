@@ -50,3 +50,19 @@ export interface PermissionGroup {
   module: string;
   permissions: Permission[];
 }
+
+export interface ModuleWithPermissions {
+  id: number;
+  name: string;
+  route: string;
+  icon: string;
+  parentId: number | null;
+  displayOrder: number;
+  modulePermissions: { permissionId: number }[];
+}
+
+export interface UserEffectivePermissions {
+  permissionIds: number[];
+  permissions: string[];
+  modules: { id: number; name: string; route: string; icon: string; parentId: number | null; displayOrder: number }[];
+}

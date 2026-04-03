@@ -2,11 +2,12 @@ import { useEffect, useState, useRef } from 'react';
 import {
   Table, Card, Tag, Input, Typography, Button, Modal, Form, Select, Switch, message, Popconfirm, Space,
 } from 'antd';
-import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { usersApi } from '../../api/users.api';
 import { adminApi } from '../../api/admin.api';
-import type { User, CreateUserPayload, UpdateUserPayload, Role } from '../../types';
+import type { User, CreateUserPayload, UpdateUserPayload, Role, ModuleWithPermissions, UserEffectivePermissions } from '../../types';
+import SidebarPreview from '../../components/SidebarPreview';
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -20,6 +21,10 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewUser, setPreviewUser] = useState<User | null>(null);
+  const [previewPerms, setPreviewPerms] = useState<UserEffectivePermissions | null>(null);
+  const [modulesWithPerms, setModulesWithPerms] = useState<ModuleWithPermissions[]>([]);
   const [form] = Form.useForm();
 
   const fetchUsersRef = useRef<(() => void) | undefined>(undefined);
@@ -27,6 +32,7 @@ export default function UsersPage() {
   useEffect(() => {
     let ignore = false;
     adminApi.listRoles().then(r => { if (!ignore) setRoles(r.data.data); });
+    adminApi.listModulesWithPermissions().then(r => { if (!ignore) setModulesWithPerms(r.data.data); });
     return () => { ignore = true; };
   }, []);
 
@@ -62,6 +68,13 @@ export default function UsersPage() {
       roleIds: record.roles.map(r => r.id),
     });
     setModalOpen(true);
+  };
+
+  const openPreview = async (record: User) => {
+    setPreviewUser(record);
+    const { data } = await adminApi.getUserEffectivePermissions(record.id);
+    setPreviewPerms(data.data);
+    setPreviewOpen(true);
   };
 
   const handleSave = async () => {
@@ -113,9 +126,10 @@ export default function UsersPage() {
     },
     {
       title: 'Acciones',
-      width: 100,
+      width: 130,
       render: (_, record) => (
         <Space>
+          <Button type="text" icon={<EyeOutlined />} size="small" title="Ver sidebar" onClick={() => openPreview(record)} />
           <Button type="text" icon={<EditOutlined />} size="small" onClick={() => openEdit(record)} />
           <Popconfirm title="¿Eliminar usuario?" onConfirm={() => handleDelete(record.id)}>
             <Button type="text" danger icon={<DeleteOutlined />} size="small" />
@@ -184,6 +198,23 @@ export default function UsersPage() {
             </Form.Item>
           )}
         </Form>
+      </Modal>
+
+      <Modal
+        title={`Sidebar — ${previewUser?.name ?? ''}`}
+        open={previewOpen}
+        onCancel={() => setPreviewOpen(false)}
+        footer={null}
+        width={320}
+      >
+        {previewPerms && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <SidebarPreview permissionIds={previewPerms.permissionIds} allModules={modulesWithPerms} />
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              {previewPerms.permissions.length} permisos activos
+            </Typography.Text>
+          </div>
+        )}
       </Modal>
     </>
   );
