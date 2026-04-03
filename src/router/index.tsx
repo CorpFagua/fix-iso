@@ -1,4 +1,6 @@
+import { Suspense } from 'react';
 import { createBrowserRouter } from 'react-router';
+import { Spin } from 'antd';
 import AuthLayout from '../layouts/AuthLayout';
 import MainLayout from '../layouts/MainLayout';
 import AuthGuard from '../guards/AuthGuard';
@@ -13,7 +15,24 @@ import AssetDetailPage from '../pages/assets/AssetDetailPage';
 import CompaniesPage from '../pages/companies/CompaniesPage';
 import UsersPage from '../pages/admin/UsersPage';
 import RolesPage from '../pages/admin/RolesPage';
+import ModulesPage from '../pages/admin/ModulesPage';
 import NotFoundPage from '../pages/NotFoundPage';
+import { routeRegistry } from './routeRegistry';
+
+const dynamicRoutes = Object.entries(routeRegistry).map(([path, entry]) => {
+  const LazyComponent = entry.component;
+  const element = (
+    <Suspense fallback={<Spin style={{ display: 'block', margin: '80px auto' }} />}>
+      <LazyComponent />
+    </Suspense>
+  );
+  return {
+    path,
+    element: entry.permission
+      ? <PermissionGuard permission={entry.permission}>{element}</PermissionGuard>
+      : element,
+  };
+});
 
 const router = createBrowserRouter([
   {
@@ -59,9 +78,14 @@ const router = createBrowserRouter([
             element: <PermissionGuard permission="roles:read"><RolesPage /></PermissionGuard>,
           },
           {
+            path: '/admin/modules',
+            element: <PermissionGuard permission="modules:manage"><ModulesPage /></PermissionGuard>,
+          },
+          {
             path: '/catalog',
             element: <PermissionGuard permission="controls:update"><CatalogPage /></PermissionGuard>,
           },
+          ...dynamicRoutes,
           { path: '*', element: <NotFoundPage /> },
         ],
       },

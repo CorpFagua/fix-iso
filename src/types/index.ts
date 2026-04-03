@@ -15,6 +15,8 @@ export type {
   Role,
   Permission,
   PermissionGroup,
+  ModuleWithPermissions,
+  UserEffectivePermissions,
 } from './user.types';
 export type {
   IsoTheme,

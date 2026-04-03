@@ -1,7 +1,7 @@
 import type { Role, Permission, PermissionGroup } from '../../types';
 
 export const mockRoles: Role[] = [
-  { id: 1, name: 'super_admin', description: 'Acceso total al sistema, gestión de plataforma', usersCount: 1, permissionsCount: 32 },
+  { id: 1, name: 'super_admin', description: 'Acceso total al sistema, gestión de plataforma', usersCount: 1, permissionsCount: 37 },
   { id: 2, name: 'admin', description: 'Administrador de empresa, gestiona usuarios y configuración', usersCount: 1, permissionsCount: 30 },
   { id: 3, name: 'auditor', description: 'Realiza auditorías internas, acceso de lectura amplio', usersCount: 1, permissionsCount: 12 },
   { id: 4, name: 'consultant', description: 'Consultor ISO, gestiona controles, riesgos y SoA', usersCount: 1, permissionsCount: 16 },
@@ -44,6 +44,8 @@ export const mockPermissions: Permission[] = [
   { id: 33, name: 'evidence:delete', description: 'Eliminar evidencias', module: 'evidence' },
   { id: 34, name: 'audit_log:read', description: 'Ver registro de auditoría del sistema', module: 'audit_log' },
   { id: 35, name: 'notifications:read', description: 'Ver notificaciones', module: 'notifications' },
+  { id: 36, name: 'modules:manage', description: 'Gestionar módulos del sistema', module: 'modules' },
+  { id: 37, name: 'permissions:manage', description: 'Gestionar permisos del sistema', module: 'permissions' },
 ];
 
 export const mockPermissionGroups: PermissionGroup[] = Array.from(

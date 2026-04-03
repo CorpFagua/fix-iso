@@ -44,6 +44,8 @@ const allModules = [
   { id: 5, name: 'Administración', route: '/admin', icon: 'SettingOutlined', parentId: null, displayOrder: 6 },
   { id: 6, name: 'Usuarios', route: '/admin/users', icon: 'TeamOutlined', parentId: 5, displayOrder: 1 },
   { id: 7, name: 'Roles y Permisos', route: '/admin/roles', icon: 'LockOutlined', parentId: 5, displayOrder: 2 },
+  { id: 9, name: 'Catálogo ISO', route: '/catalog', icon: 'BookOutlined', parentId: 5, displayOrder: 3 },
+  { id: 10, name: 'Módulos y Permisos', route: '/admin/modules', icon: 'AppstoreOutlined', parentId: 5, displayOrder: 4 },
 ];
 
 const allPermissions = [
@@ -59,11 +61,13 @@ const allPermissions = [
   'evidence:read', 'evidence:create', 'evidence:delete',
   'audit_log:read',
   'notifications:read',
+  'modules:manage',
+  'permissions:manage',
 ];
 
 const permissionsByRole: Record<string, string[]> = {
   super_admin: allPermissions,
-  admin: allPermissions.filter(p => !p.startsWith('audit_log')),
+  admin: allPermissions.filter(p => !p.startsWith('audit_log') && !p.startsWith('modules:') && !p.startsWith('permissions:')),
   auditor: [
     'dashboard:read', 'companies:read', 'controls:read', 'controls:export', 'soa:read',
     'assets:read', 'audits:read', 'audits:create', 'audits:update',
@@ -82,8 +86,8 @@ const permissionsByRole: Record<string, string[]> = {
 };
 
 const modulesByRole: Record<string, number[]> = {
-  super_admin: [1, 2, 3, 4, 5, 6, 7, 8],
-  admin: [1, 2, 3, 4, 5, 6, 7, 8],
+  super_admin: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  admin: [1, 2, 3, 4, 5, 6, 7, 8, 9],
   auditor: [1, 2, 3, 4, 8],
   consultant: [1, 2, 3, 4, 8],
   employee: [1, 2, 4],

@@ -3,13 +3,15 @@ import { Card, Table, Typography, Button, Modal, Form, Input, Checkbox, Collapse
 import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { adminApi } from '../../api/admin.api';
-import type { Role, PermissionGroup } from '../../types';
+import type { Role, PermissionGroup, ModuleWithPermissions } from '../../types';
+import SidebarPreview from '../../components/SidebarPreview';
 
 const { Title } = Typography;
 
 export default function RolesPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [permGroups, setPermGroups] = useState<PermissionGroup[]>([]);
+  const [modulesWithPerms, setModulesWithPerms] = useState<ModuleWithPermissions[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [permModalOpen, setPermModalOpen] = useState(false);
@@ -32,6 +34,7 @@ export default function RolesPage() {
     loadRoles();
     fetchRolesRef.current = loadRoles;
     adminApi.listPermissions().then(r => { if (!ignore) setPermGroups(r.data.data); });
+    adminApi.listModulesWithPermissions().then(r => { if (!ignore) setModulesWithPerms(r.data.data); });
     return () => { ignore = true; };
   }, []);
 
@@ -77,24 +80,30 @@ export default function RolesPage() {
     },
   ];
 
-  const collapseItems = permGroups.map(group => ({
-    key: group.module,
-    label: `${group.module} (${group.permissions.length})`,
-    children: (
-      <Checkbox.Group
-        value={selectedPermIds}
-        onChange={vals => setSelectedPermIds(vals as number[])}
-      >
-        <Space direction="vertical">
-          {group.permissions.map(p => (
-            <Checkbox key={p.id} value={p.id}>
-              {p.name} — <span style={{ color: '#888' }}>{p.description}</span>
-            </Checkbox>
-          ))}
-        </Space>
-      </Checkbox.Group>
-    ),
-  }));
+  const collapseItems = permGroups.map(group => {
+    const groupPermIds = group.permissions.map(p => p.id);
+    return {
+      key: group.module,
+      label: `${group.module} (${group.permissions.length})`,
+      children: (
+        <Checkbox.Group
+          value={selectedPermIds.filter(id => groupPermIds.includes(id))}
+          onChange={vals => {
+            const others = selectedPermIds.filter(id => !groupPermIds.includes(id));
+            setSelectedPermIds([...others, ...(vals as number[])]);
+          }}
+        >
+          <Space direction="vertical">
+            {group.permissions.map(p => (
+              <Checkbox key={p.id} value={p.id}>
+                {p.name} — <span style={{ color: '#888' }}>{p.description}</span>
+              </Checkbox>
+            ))}
+          </Space>
+        </Checkbox.Group>
+      ),
+    };
+  });
 
   return (
     <>
@@ -138,9 +147,19 @@ export default function RolesPage() {
         onCancel={() => setPermModalOpen(false)}
         okText="Guardar"
         cancelText="Cancelar"
-        width={640}
+        width={960}
       >
-        <Collapse items={collapseItems} defaultActiveKey={permGroups.map(g => g.module)} />
+        <div style={{ display: 'flex', gap: 24 }}>
+          <div style={{ flexShrink: 0 }}>
+            <Typography.Text strong style={{ display: 'block', marginBottom: 8, fontSize: 13 }}>
+              Preview del sidebar
+            </Typography.Text>
+            <SidebarPreview permissionIds={selectedPermIds} allModules={modulesWithPerms} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0, maxHeight: 520, overflowY: 'auto' }}>
+            <Collapse items={collapseItems} defaultActiveKey={permGroups.map(g => g.module)} />
+          </div>
+        </div>
       </Modal>
     </>
   );
