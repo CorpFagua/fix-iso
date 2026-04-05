@@ -6,6 +6,7 @@ import { assetsHandlers } from './handlers/assets.handlers';
 import { dashboardHandlers } from './handlers/dashboard.handlers';
 import { adminHandlers } from './handlers/admin.handlers';
 import { companiesHandlers } from './handlers/companies.handlers';
+import { applicabilityHandlers } from './handlers/applicability.handlers';
 
 export const worker = setupWorker(
   ...authHandlers,
@@ -15,4 +16,5 @@ export const worker = setupWorker(
   ...dashboardHandlers,
   ...adminHandlers,
   ...companiesHandlers,
+  ...applicabilityHandlers,
 );

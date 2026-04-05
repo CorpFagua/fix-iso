@@ -134,7 +134,7 @@ export default function ControlsListPage() {
 
   return (
     <>
-      <Title level={3}>Controles ISO 27001</Title>
+      <Title level={3}>Chola</Title>
       <Card>
         <Space wrap style={{ marginBottom: 16 }}>
           <Select
