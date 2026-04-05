@@ -82,7 +82,7 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
     if (path.startsWith('/admin/roles')) return '/admin/roles';
     if (path.startsWith('/admin/modules')) return '/admin/modules';
     if (path.startsWith('/catalog')) return '/catalog';
-    if (path.startsWith('/controls')) return '/controls';
+    if (path.startsWith('/implementation')) return '/implementation';
     if (path.startsWith('/assets')) return '/assets';
     if (path.startsWith('/companies')) return '/companies';
     if (path.startsWith('/soa')) return '/soa';

@@ -67,12 +67,16 @@ export interface SoAEntry {
   applicable: boolean;
   justification: string | null;
   implementationStatus: string;
+  progressPercentage: number;
+  tasksCompleted: number;
+  notesCount: number;
 }
 
 export interface UpdateSoAPayload {
   applicable: boolean;
   justification?: string;
   implementationStatus?: string;
+  forceDeactivate?: boolean;
 }
 
 export interface ControlEvidence {
@@ -82,4 +86,74 @@ export interface ControlEvidence {
   description: string | null;
   uploadedByName: string;
   uploadedAt: string;
+}
+
+// ── Implementation module ────────────────────────────────────────────────────
+
+export type ImplementationDimension =
+  | 'policy'
+  | 'procedures'
+  | 'technical'
+  | 'evidence'
+  | 'training'
+  | 'monitoring';
+
+export type TaskStatus = 'not_started' | 'in_progress' | 'completed';
+
+export interface ImplementationTask {
+  id: number;
+  dimension: ImplementationDimension;
+  dimensionLabel: string;
+  dimensionDescription: string;
+  status: TaskStatus;
+  notes: string | null;
+  completedAt: string | null;
+  updatedAt: string;
+}
+
+export interface ImplementationNote {
+  id: number;
+  userId: number;
+  userName: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface ImplementationControlSummary {
+  companyControlId: number;
+  controlId: number;
+  code: string;
+  title: string;
+  themeName: string;
+  status: string;
+  maturityLevel: string;
+  assignedUserName: string | null;
+  progressPercentage: number;
+  tasksCompleted: number;
+  totalTasks: number;
+}
+
+export interface ImplementationControlDetail extends ImplementationControlSummary {
+  description: string;
+  tasks: ImplementationTask[];
+  notes: ImplementationNote[];
+}
+
+export interface ImplementationDomainSummary {
+  themeId: number;
+  themeName: string;
+  totalControls: number;
+  progressPercentage: number;
+}
+
+export interface ImplementationGlobalSummary {
+  totalControls: number;
+  progressPercentage: number;
+  byDomain: ImplementationDomainSummary[];
+  byDimension: Array<{
+    dimension: ImplementationDimension;
+    label: string;
+    completedCount: number;
+    totalCount: number;
+  }>;
 }

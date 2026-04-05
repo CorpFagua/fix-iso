@@ -28,6 +28,14 @@ export type {
   SoAEntry,
   UpdateSoAPayload,
   ControlEvidence,
+  ImplementationDimension,
+  TaskStatus,
+  ImplementationTask,
+  ImplementationNote,
+  ImplementationControlSummary,
+  ImplementationControlDetail,
+  ImplementationDomainSummary,
+  ImplementationGlobalSummary,
 } from './control.types';
 export type {
   AssetType,

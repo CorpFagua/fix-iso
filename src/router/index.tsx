@@ -7,7 +7,8 @@ import AuthGuard from '../guards/AuthGuard';
 import PermissionGuard from '../guards/PermissionGuard';
 import LoginPage from '../pages/auth/LoginPage';
 import DashboardPage from '../pages/dashboard/DashboardPage';
-import ControlsListPage from '../pages/controls/ControlsListPage';
+import ImplementationPage from '../pages/controls/ImplementationPage';
+import ImplementationDetailPage from '../pages/controls/ImplementationDetailPage';
 import CatalogPage from '../pages/controls/CatalogPage';
 import SoAPage from '../pages/controls/SoAPage';
 import AssetsListPage from '../pages/assets/AssetsListPage';
@@ -51,8 +52,12 @@ const router = createBrowserRouter([
           { path: '/', element: <DashboardPage /> },
           { path: '/dashboard', element: <DashboardPage /> },
           {
-            path: '/controls',
-            element: <PermissionGuard permission="controls:read"><ControlsListPage /></PermissionGuard>,
+            path: '/implementation',
+            element: <PermissionGuard permission="controls:read"><ImplementationPage /></PermissionGuard>,
+          },
+          {
+            path: '/implementation/:controlId',
+            element: <PermissionGuard permission="controls:read"><ImplementationDetailPage /></PermissionGuard>,
           },
           {
             path: '/soa',
