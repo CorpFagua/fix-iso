@@ -16,6 +16,7 @@ import CompaniesPage from '../pages/companies/CompaniesPage';
 import UsersPage from '../pages/admin/UsersPage';
 import RolesPage from '../pages/admin/RolesPage';
 import ModulesPage from '../pages/admin/ModulesPage';
+import ApplicabilityRulesPage from '../pages/admin/ApplicabilityRulesPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import { routeRegistry } from './routeRegistry';
 
@@ -80,6 +81,10 @@ const router = createBrowserRouter([
           {
             path: '/admin/modules',
             element: <PermissionGuard permission="modules:manage"><ModulesPage /></PermissionGuard>,
+          },
+          {
+            path: '/admin/applicability',
+            element: <PermissionGuard permission="controls:update"><ApplicabilityRulesPage /></PermissionGuard>,
           },
           {
             path: '/catalog',
