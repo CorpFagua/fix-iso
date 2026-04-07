@@ -63,3 +63,13 @@ export type {
   UpdateCompanyPayload,
   CompanySummary,
 } from './company.types';
+export type {
+  AuditStatus,
+  AuditResultValue,
+  Audit,
+  AuditResult,
+  AuditDetail,
+  CreateAuditPayload,
+  UpdateAuditPayload,
+  UpdateAuditResultPayload,
+} from './audit.types';
