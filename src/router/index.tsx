@@ -13,6 +13,8 @@ import CatalogPage from '../pages/controls/CatalogPage';
 import SoAPage from '../pages/controls/SoAPage';
 import AssetsListPage from '../pages/assets/AssetsListPage';
 import AssetDetailPage from '../pages/assets/AssetDetailPage';
+import AuditsListPage from '../pages/audits/AuditsListPage';
+import AuditChecklistPage from '../pages/audits/AuditChecklistPage';
 import CompaniesPage from '../pages/companies/CompaniesPage';
 import UsersPage from '../pages/admin/UsersPage';
 import RolesPage from '../pages/admin/RolesPage';
@@ -77,6 +79,14 @@ const router = createBrowserRouter([
           {
             path: '/assets/:id',
             element: <PermissionGuard permission="assets:read"><AssetDetailPage /></PermissionGuard>,
+          },
+          {
+            path: '/audits',
+            element: <PermissionGuard permission="audits:read"><AuditsListPage /></PermissionGuard>,
+          },
+          {
+            path: '/audits/:auditId',
+            element: <PermissionGuard permission="audits:read"><AuditChecklistPage /></PermissionGuard>,
           },
           {
             path: '/admin/users',

@@ -12,6 +12,7 @@ import {
   BankOutlined,
   BookOutlined,
   AppstoreOutlined,
+  FileSearchOutlined,
   ReadOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
@@ -30,6 +31,7 @@ const iconMap: Record<string, React.ReactNode> = {
   BankOutlined: <BankOutlined />,
   BookOutlined: <BookOutlined />,
   AppstoreOutlined: <AppstoreOutlined />,
+  FileSearchOutlined: <FileSearchOutlined />,
   ReadOutlined: <ReadOutlined />,
 };
 
@@ -87,6 +89,7 @@ export default function Sidebar({ collapsed, onCollapse }: Props) {
     if (path.startsWith('/catalog')) return '/catalog';
     if (path.startsWith('/implementation')) return '/implementation';
     if (path.startsWith('/assets')) return '/assets';
+    if (path.startsWith('/audits')) return '/audits';
     if (path.startsWith('/companies')) return '/companies';
     if (path.startsWith('/soa')) return '/soa';
     if (path.startsWith('/trainings')) return '/trainings';
