@@ -73,6 +73,7 @@ export type {
   UpdateAuditPayload,
   UpdateAuditResultPayload,
 } from './audit.types';
+export type {
   TrainingType,
   EnrollmentStatus,
   TrainingResource,
