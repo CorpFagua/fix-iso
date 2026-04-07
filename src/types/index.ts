@@ -73,3 +73,15 @@ export type {
   UpdateAuditPayload,
   UpdateAuditResultPayload,
 } from './audit.types';
+  TrainingType,
+  EnrollmentStatus,
+  TrainingResource,
+  Training,
+  TrainingDetail,
+  CompanyTrainingEnrollment,
+  CompanyTraining,
+  CreateTrainingPayload,
+  UpdateTrainingPayload,
+  AvailableTraining,
+} from './training.types';
+export { trainingTypeLabels, enrollmentStatusLabels } from './training.types';

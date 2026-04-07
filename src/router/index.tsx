@@ -20,6 +20,9 @@ import UsersPage from '../pages/admin/UsersPage';
 import RolesPage from '../pages/admin/RolesPage';
 import ModulesPage from '../pages/admin/ModulesPage';
 import ApplicabilityRulesPage from '../pages/admin/ApplicabilityRulesPage';
+import AdminTrainingsPage from '../pages/admin/AdminTrainingsPage';
+import TrainingsPage from '../pages/trainings/TrainingsPage';
+import TrainingDetailPage from '../pages/trainings/TrainingDetailPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import { routeRegistry } from './routeRegistry';
 
@@ -104,6 +107,18 @@ const router = createBrowserRouter([
           {
             path: '/catalog',
             element: <PermissionGuard permission="controls:update"><CatalogPage /></PermissionGuard>,
+          },
+          {
+            path: '/trainings',
+            element: <PermissionGuard permission="trainings:read"><TrainingsPage /></PermissionGuard>,
+          },
+          {
+            path: '/trainings/:trainingId',
+            element: <PermissionGuard permission="trainings:read"><TrainingDetailPage /></PermissionGuard>,
+          },
+          {
+            path: '/admin/trainings',
+            element: <PermissionGuard permission="trainings:create"><AdminTrainingsPage /></PermissionGuard>,
           },
           ...dynamicRoutes,
           { path: '*', element: <NotFoundPage /> },
