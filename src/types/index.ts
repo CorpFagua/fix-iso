@@ -63,3 +63,16 @@ export type {
   UpdateCompanyPayload,
   CompanySummary,
 } from './company.types';
+export type {
+  TrainingType,
+  EnrollmentStatus,
+  TrainingResource,
+  Training,
+  TrainingDetail,
+  CompanyTrainingEnrollment,
+  CompanyTraining,
+  CreateTrainingPayload,
+  UpdateTrainingPayload,
+  AvailableTraining,
+} from './training.types';
+export { trainingTypeLabels, enrollmentStatusLabels } from './training.types';
