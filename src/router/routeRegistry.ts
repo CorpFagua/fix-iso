@@ -25,8 +25,8 @@ export interface RouteEntry {
  */
 export const routeRegistry: Record<string, RouteEntry> = {
   // ── Rutas dinámicas: agrega nuevas pantallas aquí ──
-  // '/reports': {
-  //   component: lazy(() => import('../pages/reports/ReportsPage')),
-  //   permission: 'reports:read',
-  // },
+  '/documents': {
+    component: lazy(() => import('../pages/documents/DocumentsPage')),
+    permission: 'documents:read',
+  },
 };

@@ -1,3 +1,10 @@
+export interface DimensionProgress {
+  dimension: string;
+  total: number;
+  completed: number;
+  percentage: number;
+}
+
 export interface DashboardStats {
   totalControls: number;
   implementedControls: number;
@@ -7,7 +14,11 @@ export interface DashboardStats {
   totalAssets: number;
   highRiskAssets: number;
   upcomingAudits: number;
+  completedAudits: number;
+  evaluatedControls: number;
+  compliantControls: number;
   overallRiskLevel: string;
+  implementationByDimension: DimensionProgress[];
 }
 
 export interface ComplianceByTheme {

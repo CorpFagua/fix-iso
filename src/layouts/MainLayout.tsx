@@ -18,6 +18,7 @@ const breadcrumbMap: Record<string, string> = {
   users: 'Usuarios',
   roles: 'Roles y Permisos',
   new: 'Nuevo',
+  bigdata: 'Inteligencia de Amenazas',
 };
 
 export default function MainLayout() {

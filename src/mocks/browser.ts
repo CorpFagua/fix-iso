@@ -8,6 +8,9 @@ import { adminHandlers } from './handlers/admin.handlers';
 import { companiesHandlers } from './handlers/companies.handlers';
 import { applicabilityHandlers } from './handlers/applicability.handlers';
 import { trainingsHandlers } from './handlers/trainings.handlers';
+import { bigdataHandlers } from './handlers/bigdata.handlers';
+import { documentsHandlers } from './handlers/documents.handlers';
+import { reportsHandlers } from './handlers/reports.handlers';
 
 export const worker = setupWorker(
   ...authHandlers,
@@ -19,4 +22,7 @@ export const worker = setupWorker(
   ...companiesHandlers,
   ...applicabilityHandlers,
   ...trainingsHandlers,
+  ...bigdataHandlers,
+  ...documentsHandlers,
+  ...reportsHandlers,
 );

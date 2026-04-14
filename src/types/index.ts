@@ -55,6 +55,7 @@ export type {
   RiskOverview,
   RecentActivity,
   CompanyDashboardStats,
+  DimensionProgress,
 } from './dashboard.types';
 export type {
   Company,
@@ -86,3 +87,23 @@ export type {
   AvailableTraining,
 } from './training.types';
 export { trainingTypeLabels, enrollmentStatusLabels } from './training.types';
+export type {
+  ThreatMapCountry,
+  ThreatMapResponse,
+  ThreatTimelineResponse,
+  MitreIsoCorrelationResponse,
+  TechniqueEntry,
+  CorrelationSummary,
+  CompanyRiskScoreResponse,
+  RiskBreakdown,
+  TopRisk,
+  PipelineStatus,
+  BigDataHealth,
+} from './bigdata.types';
+export type {
+  DocumentType,
+  Document,
+  CreateDocumentPayload,
+  UpdateDocumentPayload,
+} from './document.types';
+export { DOCUMENT_TYPE_LABELS } from './document.types';
