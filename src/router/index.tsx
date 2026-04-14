@@ -24,6 +24,7 @@ import AdminTrainingsPage from '../pages/admin/AdminTrainingsPage';
 import TrainingsPage from '../pages/trainings/TrainingsPage';
 import TrainingDetailPage from '../pages/trainings/TrainingDetailPage';
 import NotFoundPage from '../pages/NotFoundPage';
+import BigDataDashboardPage from '../pages/bigdata/BigDataDashboardPage';
 import { routeRegistry } from './routeRegistry';
 
 const dynamicRoutes = Object.entries(routeRegistry).map(([path, entry]) => {
@@ -119,6 +120,10 @@ const router = createBrowserRouter([
           {
             path: '/admin/trainings',
             element: <PermissionGuard permission="trainings:create"><AdminTrainingsPage /></PermissionGuard>,
+          },
+          {
+            path: '/bigdata',
+            element: <PermissionGuard permission="dashboard:read"><BigDataDashboardPage /></PermissionGuard>,
           },
           ...dynamicRoutes,
           { path: '*', element: <NotFoundPage /> },
