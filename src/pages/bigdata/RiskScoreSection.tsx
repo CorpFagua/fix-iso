@@ -52,11 +52,12 @@ export default function RiskScoreSection({ data }: Props) {
     );
   }
 
-  const scoreNormalized = (data.overall_score ?? 0) / 100;
-  const riskColor = RISK_COLOR[data.risk_level ?? ''] || '#8c8c8c';
+  const overallScore = data.overall_score ?? 0;
+  const riskLevel = data.risk_level ?? '';
+  const riskColor = RISK_COLOR[riskLevel] || '#8c8c8c';
 
   const gaugeConfig = {
-    data: { target: data.overall_score ?? 0, total: 100, name: 'Riesgo' },
+    data: { target: overallScore, total: 100, name: 'Riesgo' },
     scale: {
       color: {
         range: ['#52c41a', '#faad14', '#fa541c', '#cf1322'],
@@ -64,7 +65,7 @@ export default function RiskScoreSection({ data }: Props) {
     },
     style: {
       textContent: () =>
-        `${(data.overall_score ?? 0).toFixed(1)}\n${RISK_LABEL_ES[data.risk_level ?? ''] || data.risk_level || ''}`,
+        `${overallScore.toFixed(1)}\n${RISK_LABEL_ES[riskLevel] || riskLevel || ''}`,  
     },
     height: 220,
   };
@@ -83,7 +84,7 @@ export default function RiskScoreSection({ data }: Props) {
             <Gauge {...gaugeConfig} />
             <div style={{ marginTop: 8 }}>
               <Tag color={riskColor} style={{ fontSize: 14, padding: '4px 12px' }}>
-                {RISK_LABEL_ES[data.risk_level] || data.risk_level}
+                {RISK_LABEL_ES[riskLevel] || riskLevel}
               </Tag>
             </div>
           </Card>
@@ -142,7 +143,7 @@ export default function RiskScoreSection({ data }: Props) {
             <Space direction="vertical" size={20} style={{ width: '100%' }}>
               <div style={{ textAlign: 'center' }}>
                 <Title level={4} style={{ color: riskColor, margin: 0 }}>
-                  {data.overall_score.toFixed(1)}
+                  {overallScore.toFixed(1)}
                 </Title>
                 <Text type="secondary">{data.company_name}</Text>
               </div>
@@ -150,10 +151,10 @@ export default function RiskScoreSection({ data }: Props) {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                   <Text>Tu empresa</Text>
-                  <Text strong style={{ color: riskColor }}>{data.overall_score.toFixed(1)}</Text>
+                  <Text strong style={{ color: riskColor }}>{overallScore.toFixed(1)}</Text>
                 </div>
                 <Progress
-                  percent={data.overall_score}
+                  percent={overallScore}
                   strokeColor={riskColor}
                   showInfo={false}
                 />
@@ -174,7 +175,7 @@ export default function RiskScoreSection({ data }: Props) {
               <div style={{ textAlign: 'center', paddingTop: 8 }}>
                 {data.sector_avg_score == null ? (
                   <Tag color="default">Sin datos de sector para comparar</Tag>
-                ) : data.overall_score <= data.sector_avg_score ? (
+                ) : overallScore <= data.sector_avg_score ? (
                   <Tag color="green">Mejor que el promedio del sector</Tag>
                 ) : (
                   <Tag color="red">Por encima del promedio del sector</Tag>

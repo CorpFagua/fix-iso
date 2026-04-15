@@ -3,7 +3,7 @@ import type {
   MitreIsoCorrelationResponse,
   CompanyRiskScoreResponse,
   ThreatTimelineResponse,
-} from '../../../types/bigdata.types';
+} from '../../types/bigdata.types';
 
 // ─── Threat Map ───────────────────────────────────────────────────────────────
 export const mockThreatMap: ThreatMapResponse = {

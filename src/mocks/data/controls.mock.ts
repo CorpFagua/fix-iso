@@ -181,6 +181,9 @@ function generateSoA(companyId: number): SoAEntry[] {
     implementationStatus: (companyId === 1 ? (ctrl.id === 52 || ctrl.id === 73) : (ctrl.id === 44 || ctrl.id === 59))
       ? 'not_applicable'
       : 'in_progress',
+    progressPercentage: (companyId === 1 ? (ctrl.id === 52 || ctrl.id === 73) : (ctrl.id === 44 || ctrl.id === 59)) ? 0 : 50,
+    tasksCompleted: 0,
+    notesCount: 0,
   }));
 }
 
