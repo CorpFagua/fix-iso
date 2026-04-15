@@ -2,7 +2,6 @@ import { Card, Table, Tag, Typography, Space, Tooltip, Progress, Alert } from 'a
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
-  WarningOutlined,
   CloseCircleOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
