@@ -2,12 +2,14 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Table, Card, Tag, Select, Typography, Space, Button,
-  Modal, Form, DatePicker, Input, message, Popconfirm, Progress,
+  Modal, Form, DatePicker, Input, message, Popconfirm, Progress, Dropdown,
 } from 'antd';
-import { PlusOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import type { MenuProps } from 'antd';
+import { PlusOutlined, DeleteOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { auditsApi } from '../../api/audits.api';
+import { reportsApi } from '../../api/reports.api';
 import type { Audit, AuditStatus } from '../../types';
 import { useCompany } from '../../hooks/useCompany';
 import NoCompanySelected from '../../components/NoCompanySelected';
@@ -38,8 +40,33 @@ export default function AuditsListPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form] = Form.useForm();
+  const [downloading, setDownloading] = useState(false);
 
   const fetchRef = useRef<(() => void) | undefined>(undefined);
+
+  const handleDownload = async (format: 'pdf' | 'csv') => {
+    if (!selectedCompany) return;
+    setDownloading(true);
+    try {
+      const res = await reportsApi.downloadAuditsReport(selectedCompany.id, format);
+      const blob = new Blob([res.data], { type: res.headers['content-type'] });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Auditorias_${selectedCompany.name.replace(/\s+/g, '_')}.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      message.error('Error al generar el reporte');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const downloadMenuItems: MenuProps['items'] = [
+    { key: 'pdf', label: 'Descargar PDF', onClick: () => handleDownload('pdf') },
+    { key: 'csv', label: 'Descargar CSV', onClick: () => handleDownload('csv') },
+  ];
 
   useEffect(() => {
     if (!selectedCompany) return;
@@ -193,9 +220,14 @@ export default function AuditsListPage() {
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <Title level={3} style={{ margin: 0 }}>Auditorías</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
-          Nueva auditoría
-        </Button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Dropdown menu={{ items: downloadMenuItems }} disabled={downloading}>
+            <Button icon={<DownloadOutlined />} loading={downloading}>Exportar</Button>
+          </Dropdown>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+            Nueva auditoría
+          </Button>
+        </div>
       </div>
 
       <Card>

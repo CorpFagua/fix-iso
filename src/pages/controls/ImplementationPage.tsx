@@ -2,17 +2,20 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   Table, Card, Tag, Select, Input, Typography, Space, Progress,
-  Row, Col, Statistic, Tooltip, Skeleton,
+  Row, Col, Statistic, Tooltip, Skeleton, Button, Dropdown, message,
 } from 'antd';
+import type { MenuProps } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   ExclamationCircleOutlined,
   RightOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { implementationApi } from '../../api/implementation.api';
 import { controlsApi } from '../../api/controls.api';
+import { reportsApi } from '../../api/reports.api';
 import type {
   ImplementationControlSummary,
   ImplementationGlobalSummary,
@@ -60,6 +63,31 @@ export default function ImplementationPage() {
   const [themeFilter, setThemeFilter] = useState<number | undefined>();
   const [statusFilter, setStatusFilter] = useState<string | undefined>();
   const [search, setSearch] = useState('');
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async (format: 'pdf' | 'csv') => {
+    if (!selectedCompany) return;
+    setDownloading(true);
+    try {
+      const res = await reportsApi.downloadImplementationReport(selectedCompany.id, format);
+      const blob = new Blob([res.data], { type: res.headers['content-type'] });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Implementacion_${selectedCompany.name.replace(/\s+/g, '_')}.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      message.error('Error al generar el reporte');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const downloadMenuItems: MenuProps['items'] = [
+    { key: 'pdf', label: 'Descargar PDF', onClick: () => handleDownload('pdf') },
+    { key: 'csv', label: 'Descargar CSV', onClick: () => handleDownload('csv') },
+  ];
 
   useEffect(() => {
     let ignore = false;
@@ -159,6 +187,9 @@ export default function ImplementationPage() {
           <Title level={3} style={{ margin: 0 }}>Implementación ISO 27001</Title>
           <Text type="secondary">Gestión del avance de implementación por control aplicable</Text>
         </div>
+        <Dropdown menu={{ items: downloadMenuItems }} disabled={downloading}>
+          <Button icon={<DownloadOutlined />} loading={downloading}>Exportar</Button>
+        </Dropdown>
       </div>
 
       {/* Tarjetas de resumen global */}

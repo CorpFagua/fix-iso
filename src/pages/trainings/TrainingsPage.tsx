@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
-import { Table, Card, Tag, Typography, Button, Modal, message, Empty } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Card, Tag, Typography, Button, Modal, message, Empty, Dropdown } from 'antd';
+import type { MenuProps } from 'antd';
+import { PlusOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
+import { reportsApi } from '../../api/reports.api';
 import type { ColumnsType } from 'antd/es/table';
 import { trainingsApi } from '../../api/trainings.api';
 import type { CompanyTraining, TrainingType, EnrollmentStatus, AvailableTraining } from '../../types';
@@ -34,8 +36,33 @@ export default function TrainingsPage() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [available, setAvailable] = useState<AvailableTraining[]>([]);
   const [loadingAvailable, setLoadingAvailable] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const fetchRef = useRef<(() => void) | undefined>(undefined);
+
+  const handleDownload = async (format: 'pdf' | 'csv') => {
+    if (!selectedCompany) return;
+    setDownloading(true);
+    try {
+      const res = await reportsApi.downloadTrainingsReport(selectedCompany.id, format);
+      const blob = new Blob([res.data], { type: res.headers['content-type'] });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Capacitaciones_${selectedCompany.name.replace(/\s+/g, '_')}.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      message.error('Error al generar el reporte');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const downloadMenuItems: MenuProps['items'] = [
+    { key: 'pdf', label: 'Descargar PDF', onClick: () => handleDownload('pdf') },
+    { key: 'csv', label: 'Descargar CSV', onClick: () => handleDownload('csv') },
+  ];
 
   useEffect(() => {
     if (!selectedCompany) return;
@@ -149,9 +176,14 @@ export default function TrainingsPage() {
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <Title level={3} style={{ margin: 0 }}>Capacitaciones</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openAddModal}>
-          Agregar capacitación
-        </Button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Dropdown menu={{ items: downloadMenuItems }} disabled={downloading}>
+            <Button icon={<DownloadOutlined />} loading={downloading}>Exportar</Button>
+          </Dropdown>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openAddModal}>
+            Agregar capacitación
+          </Button>
+        </div>
       </div>
       <Card>
         <Table
