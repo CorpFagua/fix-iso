@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  Table, Card, Typography, Button, Space, Tag, Select, Input, Modal, Form, Upload, Tabs, Empty, message,
+  Table, Card, Typography, Button, Space, Tag, Select, Input, Modal, Form, Upload, Tabs, Empty, message, Radio,
 } from 'antd';
 import {
   UploadOutlined, FileTextOutlined, EyeOutlined, DeleteOutlined,
@@ -39,6 +39,7 @@ export default function DocumentsPage() {
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [sourceType, setSourceType] = useState<'file' | 'link'>('file');
   const [form] = Form.useForm();
 
   const loadDocuments = useCallback(async () => {
@@ -83,48 +84,41 @@ export default function DocumentsPage() {
     });
   };
 
-  const handleUpload = async (values: any) => {
-    if (!values.file?.[0]) {
-      message.warning('Selecciona un archivo');
-      return;
-    }
+  const handleSubmit = async (values: any) => {
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append('file', values.file[0].originFileObj);
-      fd.append('companyId', String(selectedCompany?.id ?? ''));
-      fd.append('name', values.name);
-      fd.append('documentType', values.documentType);
-      if (values.description) fd.append('description', values.description);
-
-      await documentsApi.upload(fd);
-      message.success('Documento subido correctamente');
+      if (sourceType === 'file') {
+        if (!values.file?.[0]) {
+          message.warning('Selecciona un archivo');
+          setUploading(false);
+          return;
+        }
+        const fd = new FormData();
+        fd.append('file', values.file[0].originFileObj);
+        fd.append('companyId', String(selectedCompany?.id ?? ''));
+        fd.append('name', values.name);
+        fd.append('documentType', values.documentType);
+        if (values.description) fd.append('description', values.description);
+        if (values.relatedEntityType) fd.append('relatedEntityType', values.relatedEntityType);
+        await documentsApi.upload(fd);
+        message.success('Documento subido correctamente');
+      } else {
+        await documentsApi.create({
+          companyId: selectedCompany?.id,
+          name: values.name,
+          description: values.description,
+          documentType: values.documentType,
+          driveUrl: values.driveUrl,
+          relatedEntityType: values.relatedEntityType,
+        });
+        message.success('Enlace registrado correctamente');
+      }
       setModalOpen(false);
       form.resetFields();
+      setSourceType('file');
       loadDocuments();
     } catch {
-      message.error('Error al subir documento');
-    }
-    setUploading(false);
-  };
-
-  const handleCreateLink = async (values: any) => {
-    setUploading(true);
-    try {
-      await documentsApi.create({
-        companyId: selectedCompany?.id,
-        name: values.name,
-        description: values.description,
-        documentType: values.documentType,
-        driveUrl: values.driveUrl,
-        relatedEntityType: values.relatedEntityType,
-      });
-      message.success('Documento registrado');
-      setModalOpen(false);
-      form.resetFields();
-      loadDocuments();
-    } catch {
-      message.error('Error al registrar documento');
+      message.error(sourceType === 'file' ? 'Error al subir documento' : 'Error al registrar enlace');
     }
     setUploading(false);
   };
@@ -301,74 +295,77 @@ export default function DocumentsPage() {
       <Modal
         title="Nuevo documento"
         open={modalOpen}
-        onCancel={() => { setModalOpen(false); form.resetFields(); }}
+        onCancel={() => { setModalOpen(false); form.resetFields(); setSourceType('file'); }}
         footer={null}
         width={520}
       >
-        <Tabs
-          items={[
-            {
-              key: 'upload',
-              label: 'Subir archivo',
-              children: (
-                <Form form={form} layout="vertical" onFinish={handleUpload}>
-                  <Form.Item name="name" label="Nombre" rules={[{ required: true, message: 'Requerido' }]}>
-                    <Input placeholder="Nombre del documento" />
-                  </Form.Item>
-                  <Form.Item name="documentType" label="Tipo" rules={[{ required: true, message: 'Requerido' }]}>
-                    <Select options={DOC_TYPE_OPTIONS} placeholder="Seleccionar tipo" />
-                  </Form.Item>
-                  <Form.Item name="description" label="Descripción">
-                    <Input.TextArea rows={2} placeholder="Descripción breve (opcional)" />
-                  </Form.Item>
-                  <Form.Item name="file" label="Archivo" valuePropName="fileList" getValueFromEvent={e => Array.isArray(e) ? e : e?.fileList} rules={[{ required: true, message: 'Selecciona un archivo' }]}>
-                    <Upload beforeUpload={() => false} maxCount={1}>
-                      <Button icon={<UploadOutlined />}>Seleccionar archivo</Button>
-                    </Upload>
-                  </Form.Item>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit" loading={uploading} block>
-                      Subir documento
-                    </Button>
-                  </Form.Item>
-                </Form>
-              ),
-            },
-            {
-              key: 'link',
-              label: 'Registrar enlace',
-              children: (
-                <Form layout="vertical" onFinish={handleCreateLink}>
-                  <Form.Item name="name" label="Nombre" rules={[{ required: true, message: 'Requerido' }]}>
-                    <Input placeholder="Nombre del documento" />
-                  </Form.Item>
-                  <Form.Item name="documentType" label="Tipo" rules={[{ required: true, message: 'Requerido' }]}>
-                    <Select options={DOC_TYPE_OPTIONS} placeholder="Seleccionar tipo" />
-                  </Form.Item>
-                  <Form.Item name="driveUrl" label="URL del documento" rules={[{ required: true, type: 'url', message: 'Ingresa una URL válida' }]}>
-                    <Input placeholder="https://drive.google.com/..." />
-                  </Form.Item>
-                  <Form.Item name="description" label="Descripción">
-                    <Input.TextArea rows={2} placeholder="Descripción breve (opcional)" />
-                  </Form.Item>
-                  <Form.Item name="relatedEntityType" label="Relacionar con">
-                    <Select allowClear placeholder="Opcional" options={[
-                      { value: 'control', label: 'Control' },
-                      { value: 'audit', label: 'Auditoría' },
-                      { value: 'asset', label: 'Activo' },
-                      { value: 'training', label: 'Capacitación' },
-                    ]} />
-                  </Form.Item>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit" loading={uploading} block>
-                      Registrar enlace
-                    </Button>
-                  </Form.Item>
-                </Form>
-              ),
-            },
-          ]}
-        />
+        <Form form={form} layout="vertical" onFinish={handleSubmit} style={{ marginTop: 8 }}>
+          <Form.Item style={{ marginBottom: 20 }}>
+            <Radio.Group
+              value={sourceType}
+              onChange={e => { setSourceType(e.target.value); form.resetFields(['file', 'driveUrl']); }}
+              optionType="button"
+              buttonStyle="solid"
+              style={{ width: '100%', display: 'flex' }}
+            >
+              <Radio.Button value="file" style={{ flex: 1, textAlign: 'center' }}>
+                <UploadOutlined /> Subir archivo
+              </Radio.Button>
+              <Radio.Button value="link" style={{ flex: 1, textAlign: 'center' }}>
+                <LinkOutlined /> Registrar enlace
+              </Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+
+          <Form.Item name="name" label="Nombre" rules={[{ required: true, message: 'Requerido' }]}>
+            <Input placeholder="Nombre del documento" />
+          </Form.Item>
+
+          <Form.Item name="documentType" label="Tipo" rules={[{ required: true, message: 'Requerido' }]}>
+            <Select options={DOC_TYPE_OPTIONS} placeholder="Seleccionar tipo" />
+          </Form.Item>
+
+          {sourceType === 'file' ? (
+            <Form.Item
+              name="file"
+              label="Archivo"
+              valuePropName="fileList"
+              getValueFromEvent={e => Array.isArray(e) ? e : e?.fileList}
+              rules={[{ required: true, message: 'Selecciona un archivo' }]}
+            >
+              <Upload beforeUpload={() => false} maxCount={1}>
+                <Button icon={<UploadOutlined />}>Seleccionar archivo</Button>
+              </Upload>
+            </Form.Item>
+          ) : (
+            <Form.Item
+              name="driveUrl"
+              label="URL del documento"
+              rules={[{ required: true, type: 'url', message: 'Ingresa una URL válida (https://...)' }]}
+            >
+              <Input prefix={<LinkOutlined />} placeholder="https://drive.google.com/... o cualquier URL" />
+            </Form.Item>
+          )}
+
+          <Form.Item name="description" label="Descripción">
+            <Input.TextArea rows={2} placeholder="Descripción breve (opcional)" />
+          </Form.Item>
+
+          <Form.Item name="relatedEntityType" label="Relacionar con">
+            <Select allowClear placeholder="Sin relación (opcional)" options={[
+              { value: 'control', label: 'Control' },
+              { value: 'audit', label: 'Auditoría' },
+              { value: 'asset', label: 'Activo' },
+              { value: 'training', label: 'Capacitación' },
+            ]} />
+          </Form.Item>
+
+          <Form.Item style={{ marginBottom: 0 }}>
+            <Button type="primary" htmlType="submit" loading={uploading} block>
+              {sourceType === 'file' ? 'Subir documento' : 'Registrar enlace'}
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
     </>
   );
